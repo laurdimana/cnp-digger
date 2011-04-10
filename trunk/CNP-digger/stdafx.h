@@ -22,7 +22,7 @@
 
 #include <afxwin.h>         // MFC core and standard components
 #include <afxext.h>         // MFC extensions
-
+#include <MsXml2.h>
 
 
 
@@ -37,12 +37,35 @@
 #include <afxcontrolbars.h>     // MFC support for ribbons and control bars
 
 
+// Worker thread cmds
+#define WM_CHECK_FOR_ESSENTIAL_FILES	WM_USER + 1
 
 
+// Needed files and folders
+#define PERSONS_DB		L"Persons.db3"
+#define MEDICS_XML		L"Medics.xml"
+#define CITiES_XML		L"Cities.xml"
+#define EXPORTS_DIR		L"Exports"
+#define PATIENTS_DIR	L"Patients"
+#define TEMP_DIR		L"Temp"
+
+#define WORKER_THREAD_STOP_TIMEOUT		2000
 
 
+// XML Labels
+#define XML_CITIES		L"cities"
+#define XML_CITY		L"city"
+#define XML_CITY_NAME	L"cityName"
+#define XML_CITY_CODE	L"cityCode"
 
+#define XML_MEDICS				L"medics"
+#define XML_MEDIC				L"medic"
+#define XML_MEDIC_LAST_NAME		L"lastName"
+#define XML_MEDIC_FIRST_NAME	L"firstName"
+#define XML_MEDIC_ID			L"id"
 
+// General constants
+#define XML_HEADER L"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 
 #ifdef _UNICODE
 #if defined _M_IX86

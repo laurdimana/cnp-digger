@@ -9,6 +9,8 @@
 
 #include "resource.h"       // main symbols
 #include "FrmMain.h"
+#include "WorkerThread.h"
+#include "ProgramData.h"
 
 class CCNPdiggerApp : public CWinApp
 {
@@ -26,7 +28,9 @@ protected:
 
 // Members
 public:
-	CFrmMain *m_pFrmMain;
+	CFrmMain	  *m_pFrmMain;
+	CWorkerThread *m_pWorkerThread;
+	CProgramData  *m_pProgramData;
 
 // Message map
 public:
