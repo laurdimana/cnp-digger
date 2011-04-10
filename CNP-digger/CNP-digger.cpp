@@ -24,7 +24,7 @@ END_MESSAGE_MAP()
 
 CCNPdiggerApp::CCNPdiggerApp()
 {
-	SetAppID(_T("iMPROVED.CNP-digger.0-0-1"));
+	SetAppID( L"iMPROVED.CNP-digger.0-0-1" );
 }
 
 // The one and only CCNPdiggerApp object
@@ -59,14 +59,17 @@ BOOL CCNPdiggerApp::InitInstance()
 	m_pFrmMain = new CFrmMain();
 
 	if ( !m_pFrmMain )
+	{
+		TRACE( L"@ CCNPdiggerApp::InitInstance -> Failed to create FrmMain\n" );
 		return FALSE;
+	}
 
 	m_pMainWnd = m_pFrmMain;
 
 	// create and load the frame with its resources
 	m_pFrmMain->LoadFrame( 
 		IDR_MAINFRAME,
-		WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, 
+		WS_OVERLAPPED | WS_CAPTION | FWS_ADDTOTITLE | WS_MINIMIZEBOX | WS_SYSMENU, 
 		NULL,
 		NULL );
 
@@ -76,12 +79,47 @@ BOOL CCNPdiggerApp::InitInstance()
 	// call DragAcceptFiles only if there's a suffix
 	//  In an SDI app, this should occur after ProcessShellCommand
 
+	// Init program data
+	m_pProgramData = new CProgramData();
+
+	if ( !m_pProgramData )
+	{
+		TRACE( L"@ CCNPdiggerApp::InitInstance -> Failed to init program data\n" );
+		return FALSE;
+	}
+
+	// Create and start the worker thread
+	m_pWorkerThread = new CWorkerThread();
+
+	if ( !m_pWorkerThread || !m_pWorkerThread->CreateThread() )
+	{
+		TRACE( L"@ CCNPdiggerApp::InitInstance -> Failed to create the worker thread\n" );
+		return FALSE;
+	}
+
+	m_pWorkerThread->PostThreadMessage( WM_CHECK_FOR_ESSENTIAL_FILES, NULL, NULL );
+
 	return TRUE;
 }
 
 int CCNPdiggerApp::ExitInstance()
 {
-	//TODO: handle additional resources you may have added
+	if ( m_pWorkerThread != NULL )
+	{
+		m_pWorkerThread->PostThreadMessage( WM_QUIT, 0, 0 );
+
+		if ( ::WaitForSingleObject( m_pWorkerThread->m_hThread, WORKER_THREAD_STOP_TIMEOUT ) == WAIT_TIMEOUT )
+		{
+			::TerminateThread( m_pWorkerThread->m_hThread, 0 );
+			TRACE( L"@ CCNPdiggerApp::ExitInstance -> Killed the worker thread\n" );
+		}
+		else
+			TRACE( L"@ CCNPdiggerApp::ExitInstance -> Stopped the worker thread\n" );
+	}
+
+	if ( m_pProgramData != NULL )
+		delete m_pProgramData;
+
 	return CWinApp::ExitInstance();
 }
 

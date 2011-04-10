@@ -21,10 +21,16 @@ public:
 
 // Methods
 protected:
+	BOOL AddPatientToTable( int nNo, wchar_t *pszCNP, wchar_t *pszLastName, wchar_t *pszFirstName );
 
 // Members
 protected:
+	CFont m_fntSansSerif12;
+
 	CStatusBar m_StatusBar;
+	CEdit	   m_txtCNP;
+	CListCtrl  m_tblPatients;
+	CButton	   m_btnGo;
 
 // Message map
 protected:
