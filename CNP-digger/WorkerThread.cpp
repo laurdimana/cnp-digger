@@ -1,9 +1,14 @@
 #include "stdafx.h"
 #include "WorkerThread.h"
 #include "CNP-digger.h"
+#include "MedicsSAXContentHandler.h"
+#include "CitiesSAXContentHandler.h"
+#include "SAXErrorHandler.h"
 
 BEGIN_MESSAGE_MAP( CWorkerThread, CWinThread )
 	ON_THREAD_MESSAGE( WM_CHECK_FOR_ESSENTIAL_FILES, OnCheckForEssentialFiles )
+	ON_THREAD_MESSAGE( WM_PARSE_MEDICS_XML, OnParseMedicsXML )
+	ON_THREAD_MESSAGE( WM_PARSE_CITIES_XML, OnParseCitiesXML )
 END_MESSAGE_MAP()
 
 ///////////////////////////////////////////////// Constructor / Destructor ///////////////////////////////////////////
@@ -40,6 +45,7 @@ void CWorkerThread::OnCheckForEssentialFiles( WPARAM wParam, LPARAM lParam )
 		TRACE( L"@ CWorkerThread::OnCheckForEssentialFiles -> Persons db not found\n" );
 		theApp.m_pFrmMain->MessageBox( L"Persons database not found.", L"Error" );
 		theApp.m_pFrmMain->PostMessage( WM_QUIT );
+		return;
 	}
 
 	// Check for exports folder
@@ -50,6 +56,7 @@ void CWorkerThread::OnCheckForEssentialFiles( WPARAM wParam, LPARAM lParam )
 			TRACE( L"@ CWorkerThread::OnCheckForEssentialFiles -> Failed to create the Exports folder\n" );
 			theApp.m_pFrmMain->MessageBox( L"Failed to create the Exports folder.", L"Error" );
 			theApp.m_pFrmMain->PostMessage( WM_QUIT );
+			return;
 		}
 	}
 
@@ -61,6 +68,7 @@ void CWorkerThread::OnCheckForEssentialFiles( WPARAM wParam, LPARAM lParam )
 			TRACE( L"@ CWorkerThread::OnCheckForEssentialFiles -> Failed to create the Patients folder\n" );
 			theApp.m_pFrmMain->MessageBox( L"Failed to create the Patients folder.", L"Error" );
 			theApp.m_pFrmMain->PostMessage( WM_QUIT );
+			return;
 		}
 	}
 
@@ -72,6 +80,7 @@ void CWorkerThread::OnCheckForEssentialFiles( WPARAM wParam, LPARAM lParam )
 			TRACE( L"@ CWorkerThread::OnCheckForEssentialFiles -> Failed to create the Temp folder\n" );
 			theApp.m_pFrmMain->MessageBox( L"Failed to create the Temp folder.", L"Error" );
 			theApp.m_pFrmMain->PostMessage( WM_QUIT );
+			return;
 		}
 	}
 
@@ -83,6 +92,7 @@ void CWorkerThread::OnCheckForEssentialFiles( WPARAM wParam, LPARAM lParam )
 			TRACE( L"@ CWorkerThread::OnCheckForEssentialFiles -> Failed to create cityes xml\n" );
 			theApp.m_pFrmMain->MessageBox( L"Failed to create cityes xml.", L"Error" );
 			theApp.m_pFrmMain->PostMessage( WM_QUIT );
+			return;
 		}
 	}
 
@@ -94,8 +104,71 @@ void CWorkerThread::OnCheckForEssentialFiles( WPARAM wParam, LPARAM lParam )
 			TRACE( L"@ CWorkerThread::OnCheckForEssentialFiles -> Failed to create medics xml\n" );
 			theApp.m_pFrmMain->MessageBox( L"Failed to create medics xml.", L"Error" );
 			theApp.m_pFrmMain->PostMessage( WM_QUIT );
+			return;
 		}
 	}
+
+	this->PostThreadMessage( WM_PARSE_CITIES_XML, NULL, NULL );
+
+	this->PostThreadMessage( WM_PARSE_MEDICS_XML, NULL, NULL );
+}
+
+void CWorkerThread::OnParseMedicsXML( WPARAM wParam, LPARAM lParam )
+{
+	CoInitialize( NULL );
+	ISAXXMLReader *pXMLReader = NULL;
+
+	HRESULT hr = CoCreateInstance(
+		__uuidof( SAXXMLReader ),
+		NULL,
+		CLSCTX_ALL,
+		__uuidof( ISAXXMLReader ),
+		(void **)&pXMLReader );
+
+	if ( !FAILED( hr ) )
+	{
+		MedicsSAXContentHandler *pMedicsHandler = new MedicsSAXContentHandler();
+		hr = pXMLReader->putContentHandler( pMedicsHandler );
+
+		SAXErrorHandler *pErrorHandler = new SAXErrorHandler();
+		hr = pXMLReader->putErrorHandler( pErrorHandler );
+
+		hr = pXMLReader->parseURL( (theApp.m_pProgramData->GetCurrentDir() + L"\\" + theApp.m_pProgramData->GetMedicsXML()).GetBuffer() );
+
+		pXMLReader->Release();
+	}
+
+	CoUninitialize();
+
+	theApp.m_pFrmMain->PostMessage( WM_COMMAND, MAKELONG( FRM_MAIN_MNU_FILE_MEDICS, 0 ) );
+}
+
+void CWorkerThread::OnParseCitiesXML( WPARAM wParam, LPARAM lParam )
+{
+	CoInitialize( NULL );
+	ISAXXMLReader *pXMLReader = NULL;
+
+	HRESULT hr = CoCreateInstance(
+		__uuidof( SAXXMLReader ),
+		NULL,
+		CLSCTX_ALL,
+		__uuidof( ISAXXMLReader ),
+		(void **)&pXMLReader );
+
+	if ( !FAILED( hr ) )
+	{
+		CitiesSAXContentHandler *pCitiesHandler = new CitiesSAXContentHandler();
+		hr = pXMLReader->putContentHandler( pCitiesHandler );
+
+		SAXErrorHandler *pErrorHandler = new SAXErrorHandler();
+		hr = pXMLReader->putErrorHandler( pErrorHandler );
+
+		hr = pXMLReader->parseURL( (theApp.m_pProgramData->GetCurrentDir() + L"\\" + theApp.m_pProgramData->GetCitiesXML()).GetBuffer() );
+
+		pXMLReader->Release();
+	}
+
+	CoUninitialize();
 }
 
 //////////////////////////////////////////////////// Methods //////////////////////////////////////////////////////////
