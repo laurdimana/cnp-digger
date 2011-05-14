@@ -39,6 +39,8 @@
 
 // Worker thread cmds
 #define WM_CHECK_FOR_ESSENTIAL_FILES	WM_USER + 1
+#define WM_PARSE_MEDICS_XML				WM_USER + 2
+#define WM_PARSE_CITIES_XML				WM_USER + 3
 
 
 // Needed files and folders
@@ -65,7 +67,33 @@
 #define XML_MEDIC_ID			L"id"
 
 // General constants
-#define XML_HEADER L"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+#define XML_HEADER			L"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+#define CITY_DISTRICT_CODE	L"TR"
+#define INIT_MEDICS_HASH_TABLE	29
+#define INIT_CITIES_HASH_TABLE	499
+
+// Structs
+struct MEDIC
+{
+	CString strID,
+			strLastName,
+			strFirstName;
+};
+
+struct CITY
+{
+	CString strID,
+			strName,
+			strDistrict;
+};
+
+struct PATIENT
+{
+	CString strID,
+			strLastName,
+			strFirstName,
+			strCityName;
+};
 
 #ifdef _UNICODE
 #if defined _M_IX86

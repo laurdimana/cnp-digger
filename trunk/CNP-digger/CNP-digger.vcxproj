@@ -103,17 +103,23 @@
     <None Include="res\CNPdigger.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CitiesSAXContentHandler.h" />
     <ClInclude Include="CNP-digger.h" />
     <ClInclude Include="FrmMain.h" />
+    <ClInclude Include="MedicsSAXContentHandler.h" />
     <ClInclude Include="ProgramData.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SAXContentHandler.h" />
+    <ClInclude Include="SAXErrorHandler.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="WorkerThread.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CitiesSAXContentHandler.cpp" />
     <ClCompile Include="CNP-digger.cpp" />
     <ClCompile Include="FrmMain.cpp" />
+    <ClCompile Include="MedicsSaxContentHandler.cpp" />
     <ClCompile Include="ProgramData.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -127,4 +133,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="CNP-digger.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

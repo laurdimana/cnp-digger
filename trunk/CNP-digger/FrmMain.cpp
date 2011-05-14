@@ -16,6 +16,10 @@ IMPLEMENT_DYNAMIC( CFrmMain, CFrameWnd )
 
 BEGIN_MESSAGE_MAP( CFrmMain, CFrameWnd )
 	ON_WM_CREATE()
+
+	ON_COMMAND( FRM_MAIN_MNU_FILE_MEDICS, OnFileMedics )
+	ON_COMMAND( FRM_MAIN_MNU_FILE_IMPORT, OnFileImport )
+	ON_COMMAND( FRM_MAIN_MNU_FILE_EXPORT, OnFileExport )
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -139,6 +143,20 @@ int CFrmMain::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_txtCNP.SetFocus();
 
 	return 0;
+}
+
+void CFrmMain::OnFileMedics()
+{
+	AfxMessageBox( L"TODO: Select medic dialog" );
+	this->PostMessage( WM_QUIT );
+}
+
+void CFrmMain::OnFileImport()
+{
+}
+
+void CFrmMain::OnFileExport()
+{
 }
 
 //////////////////////////////////////////////////////// Methods /////////////////////////////////////////////////////////

@@ -34,7 +34,11 @@ protected:
 
 // Message map
 protected:
-	afx_msg int OnCreate( LPCREATESTRUCT lpCreateStruct );
+	afx_msg int	 OnCreate( LPCREATESTRUCT lpCreateStruct );
+
+	afx_msg void OnFileMedics();
+	afx_msg void OnFileImport();
+	afx_msg void OnFileExport();
 
 	DECLARE_MESSAGE_MAP()
 };
