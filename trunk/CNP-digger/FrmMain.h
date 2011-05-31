@@ -21,7 +21,11 @@ public:
 
 // Methods
 protected:
-	BOOL AddPatientToTable( int nNo, wchar_t *pszCNP, wchar_t *pszLastName, wchar_t *pszFirstName );
+	BOOL AddPatientToTable( int nNo, CString strCNP, CString strLastName, CString strFirstName );
+
+public:
+	void SetStatus( CString strMsg );
+	void SetWndTitle( CString strTitle );
 
 // Members
 protected:

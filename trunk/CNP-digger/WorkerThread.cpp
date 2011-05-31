@@ -9,6 +9,7 @@ BEGIN_MESSAGE_MAP( CWorkerThread, CWinThread )
 	ON_THREAD_MESSAGE( WM_CHECK_FOR_ESSENTIAL_FILES, OnCheckForEssentialFiles )
 	ON_THREAD_MESSAGE( WM_PARSE_MEDICS_XML, OnParseMedicsXML )
 	ON_THREAD_MESSAGE( WM_PARSE_CITIES_XML, OnParseCitiesXML )
+	ON_THREAD_MESSAGE( WM_INIT_MEDIC, OnInitMedic )
 END_MESSAGE_MAP()
 
 ///////////////////////////////////////////////// Constructor / Destructor ///////////////////////////////////////////
@@ -169,6 +170,19 @@ void CWorkerThread::OnParseCitiesXML( WPARAM wParam, LPARAM lParam )
 	}
 
 	CoUninitialize();
+}
+
+void CWorkerThread::OnInitMedic( WPARAM wParam, LPARAM lParam )
+{
+	theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_LOADING_MEDIC ) + L" " + 
+		theApp.m_pProgramData->GetCurrentMedic().strLastName + L" " +
+		theApp.m_pProgramData->GetCurrentMedic().strFirstName + L"..." );
+
+	// TODO: Load patients
+
+	theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_LOADED_MEDIC ) + L" " + 
+		theApp.m_pProgramData->GetCurrentMedic().strLastName + L" " +
+		theApp.m_pProgramData->GetCurrentMedic().strFirstName );
 }
 
 //////////////////////////////////////////////////// Methods //////////////////////////////////////////////////////////

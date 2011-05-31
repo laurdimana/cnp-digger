@@ -56,6 +56,9 @@
     <ClInclude Include="CitiesSAXContentHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DlgMedics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CNP-digger.cpp">
@@ -77,6 +80,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CitiesSAXContentHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgMedics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
