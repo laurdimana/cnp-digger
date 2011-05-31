@@ -41,6 +41,7 @@
 #define WM_CHECK_FOR_ESSENTIAL_FILES	WM_USER + 1
 #define WM_PARSE_MEDICS_XML				WM_USER + 2
 #define WM_PARSE_CITIES_XML				WM_USER + 3
+#define WM_INIT_MEDIC					WM_USER + 4
 
 
 // Needed files and folders
@@ -94,6 +95,10 @@ struct PATIENT
 			strFirstName,
 			strCityName;
 };
+
+typedef CMap<CString, LPCWSTR, MEDIC, MEDIC&> CMapStringToMedic;
+typedef CMap<CString, LPCWSTR, CITY, CITY&>   CMapStringToCity;
+typedef CList<PATIENT, PATIENT&>			  CListPatients;
 
 #ifdef _UNICODE
 #if defined _M_IX86

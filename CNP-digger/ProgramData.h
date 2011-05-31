@@ -13,6 +13,11 @@ public:
 	void AddMedic( CString strID, CString strLastName, CString strFirstName );
 	void AddCity( CString strID, CString strName, CString strDistrict );
 	void AddPatient( CString strID, CString strLastName, CString strFirstName, CString strCityName );
+	void AddPatientTemp( CString strID, CString strLastName, CString strFirstName, CString strCityName );
+	void CreateMedic( CString strID, CString strLastName, CString strFirstName );
+	void CreateCity( CString strID, CString strName, CString strDistrict );
+	void CreatePatientTemp( CString strID, CString strLastName, CString strFirstName, CString strCityName );
+	void SetCurrentMedic( MEDIC medic );
 
 // Getters
 	CString GetCurrentDir();
@@ -28,8 +33,12 @@ public:
 	int GetPatients();
 
 	MEDIC   GetMedic( CString strID );
+	MEDIC	GetCurrentMedic();
 	CITY    GetCity( CString strName );
 	PATIENT GetPatient( int nIndex );
+	PATIENT GetPatientTemp( int nIndex );
+
+	CMapStringToMedic *GetMedicsMap();
 
 	BOOL ToUTF8( wchar_t *pszIn, int nInLen, char *pszOut, int *nOutLen );
 
@@ -43,7 +52,10 @@ protected:
 			m_strPatientsDir,
 			m_strTempDir;
 
-	CMap<wchar_t*, wchar_t*, MEDIC, MEDIC&> m_Medics;
-	CMap<wchar_t*, wchar_t*, CITY, CITY&>   m_Cities;
-	CList<PATIENT, PATIENT&>			    m_Patients;
+	CMapStringToMedic m_MedicsMap;
+	CMapStringToCity  m_CitiesMap;
+	CListPatients	  m_PatientsList,
+					  m_PatientsListTemp;
+
+	MEDIC m_CurrentMedic;
 };

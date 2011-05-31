@@ -22,6 +22,7 @@ protected:
 	afx_msg void OnCheckForEssentialFiles( WPARAM wParam, LPARAM lParam );
 	afx_msg void OnParseMedicsXML( WPARAM wParam, LPARAM lParam );
 	afx_msg void OnParseCitiesXML( WPARAM wParam, LPARAM lParam );
+	afx_msg void OnInitMedic( WPARAM wParam, LPARAM lParam );
 
 	DECLARE_MESSAGE_MAP()
 };

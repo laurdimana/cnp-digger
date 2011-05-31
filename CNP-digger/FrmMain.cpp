@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "CNP-digger.h"
 #include "FrmMain.h"
+#include "DlgMedics.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -146,9 +147,25 @@ int CFrmMain::OnCreate(LPCREATESTRUCT lpCreateStruct)
 }
 
 void CFrmMain::OnFileMedics()
-{
-	AfxMessageBox( L"TODO: Select medic dialog" );
-	this->PostMessage( WM_QUIT );
+{	
+	CDlgMedics dlgMedics;
+	CString    strCurMedicId = theApp.m_pProgramData->GetCurrentMedic().strID;
+
+	dlgMedics.DoModal();
+
+	if ( theApp.m_pProgramData->GetCurrentMedic().strID.GetLength() > 0 )
+	{
+		if ( theApp.m_pProgramData->GetCurrentMedic().strID != strCurMedicId )
+		{
+			SetWndTitle( L" [" + theApp.m_pProgramData->GetCurrentMedic().strLastName + L" " + 
+				theApp.m_pProgramData->GetCurrentMedic().strFirstName + L" " + 
+				theApp.m_pProgramData->GetCurrentMedic().strID + L"]" );
+
+			theApp.m_pWorkerThread->PostThreadMessage( WM_INIT_MEDIC, NULL, NULL );
+		}
+	}
+	else
+		this->PostMessage( WM_QUIT );
 }
 
 void CFrmMain::OnFileImport()
@@ -161,7 +178,7 @@ void CFrmMain::OnFileExport()
 
 //////////////////////////////////////////////////////// Methods /////////////////////////////////////////////////////////
 
-BOOL CFrmMain::AddPatientToTable( int nNo, wchar_t *pszCNP, wchar_t *pszLastName, wchar_t *pszFirstName )
+BOOL CFrmMain::AddPatientToTable( int nNo, CString strCNP, CString strLastName, CString strFirstName )
 {
 	LVITEM lvi = { 0 };
 
@@ -170,18 +187,31 @@ BOOL CFrmMain::AddPatientToTable( int nNo, wchar_t *pszCNP, wchar_t *pszLastName
 
 	// CNP
 	lvi.iSubItem = 0;
-	lvi.pszText  = pszCNP;
+	lvi.pszText  = strCNP.GetBuffer();
 	m_tblPatients.InsertItem( &lvi );
 
 	// Last name
 	lvi.iSubItem = 1;
-	lvi.pszText  = pszLastName;
+	lvi.pszText  = strLastName.GetBuffer();
 	m_tblPatients.SetItem( &lvi );
 
 	// First name
 	lvi.iSubItem = 2;
-	lvi.pszText  = pszFirstName;
+	lvi.pszText  = strFirstName.GetBuffer();
 	m_tblPatients.SetItem( &lvi );
 
 	return TRUE;
+}
+
+void CFrmMain::SetStatus( CString strMsg )
+{
+	m_StatusBar.SetWindowText( strMsg );
+}
+
+void CFrmMain::SetWndTitle( CString strTitle )
+{
+	CString strWndTitle;
+
+	strWndTitle.LoadString( AFX_IDS_APP_TITLE );
+	this->SetWindowText( strWndTitle + strTitle );
 }

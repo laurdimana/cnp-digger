@@ -105,6 +105,7 @@
   <ItemGroup>
     <ClInclude Include="CitiesSAXContentHandler.h" />
     <ClInclude Include="CNP-digger.h" />
+    <ClInclude Include="DlgMedics.h" />
     <ClInclude Include="FrmMain.h" />
     <ClInclude Include="MedicsSAXContentHandler.h" />
     <ClInclude Include="ProgramData.h" />
@@ -118,6 +119,7 @@
   <ItemGroup>
     <ClCompile Include="CitiesSAXContentHandler.cpp" />
     <ClCompile Include="CNP-digger.cpp" />
+    <ClCompile Include="DlgMedics.cpp" />
     <ClCompile Include="FrmMain.cpp" />
     <ClCompile Include="MedicsSaxContentHandler.cpp" />
     <ClCompile Include="ProgramData.cpp" />
