@@ -44,8 +44,8 @@ void CWorkerThread::OnCheckForEssentialFiles( WPARAM wParam, LPARAM lParam )
 	if ( !::PathFileExists( (theApp.m_pProgramData->GetCurrentDir() + L"\\" + theApp.m_pProgramData->GetPersonsDB()).GetBuffer() ) )
 	{
 		TRACE( L"@ CWorkerThread::OnCheckForEssentialFiles -> Persons db not found\n" );
-		theApp.m_pFrmMain->MessageBox( L"Persons database not found.", L"Error" );
-		theApp.m_pFrmMain->PostMessage( WM_QUIT );
+		theApp.m_pFrmMain->MessageBox( L"Persons database not found.", L"Error", MB_ICONERROR );
+		theApp.m_pFrmMain->PostMessage( WM_CLOSE );
 		return;
 	}
 
@@ -55,8 +55,8 @@ void CWorkerThread::OnCheckForEssentialFiles( WPARAM wParam, LPARAM lParam )
 		if ( !::CreateDirectory( (theApp.m_pProgramData->GetCurrentDir() + L"\\" + theApp.m_pProgramData->GetExportsDir()).GetBuffer(), NULL ) )
 		{
 			TRACE( L"@ CWorkerThread::OnCheckForEssentialFiles -> Failed to create the Exports folder\n" );
-			theApp.m_pFrmMain->MessageBox( L"Failed to create the Exports folder.", L"Error" );
-			theApp.m_pFrmMain->PostMessage( WM_QUIT );
+			theApp.m_pFrmMain->MessageBox( L"Failed to create the Exports folder.", L"Error", MB_ICONERROR );
+			theApp.m_pFrmMain->PostMessage( WM_CLOSE );
 			return;
 		}
 	}
@@ -67,8 +67,8 @@ void CWorkerThread::OnCheckForEssentialFiles( WPARAM wParam, LPARAM lParam )
 		if ( !::CreateDirectory( (theApp.m_pProgramData->GetCurrentDir() + L"\\" + theApp.m_pProgramData->GetPatientsDir()).GetBuffer(), NULL ) )
 		{
 			TRACE( L"@ CWorkerThread::OnCheckForEssentialFiles -> Failed to create the Patients folder\n" );
-			theApp.m_pFrmMain->MessageBox( L"Failed to create the Patients folder.", L"Error" );
-			theApp.m_pFrmMain->PostMessage( WM_QUIT );
+			theApp.m_pFrmMain->MessageBox( L"Failed to create the Patients folder.", L"Error", MB_ICONERROR );
+			theApp.m_pFrmMain->PostMessage( WM_CLOSE );
 			return;
 		}
 	}
@@ -79,8 +79,8 @@ void CWorkerThread::OnCheckForEssentialFiles( WPARAM wParam, LPARAM lParam )
 		if ( !::CreateDirectory( (theApp.m_pProgramData->GetCurrentDir() + L"\\" + theApp.m_pProgramData->GetTempDir()).GetBuffer(), NULL ) )
 		{
 			TRACE( L"@ CWorkerThread::OnCheckForEssentialFiles -> Failed to create the Temp folder\n" );
-			theApp.m_pFrmMain->MessageBox( L"Failed to create the Temp folder.", L"Error" );
-			theApp.m_pFrmMain->PostMessage( WM_QUIT );
+			theApp.m_pFrmMain->MessageBox( L"Failed to create the Temp folder.", L"Error", MB_ICONERROR );
+			theApp.m_pFrmMain->PostMessage( WM_CLOSE );
 			return;
 		}
 	}
@@ -91,8 +91,8 @@ void CWorkerThread::OnCheckForEssentialFiles( WPARAM wParam, LPARAM lParam )
 		if ( !CreateGenericCitiesXml() )
 		{
 			TRACE( L"@ CWorkerThread::OnCheckForEssentialFiles -> Failed to create cityes xml\n" );
-			theApp.m_pFrmMain->MessageBox( L"Failed to create cityes xml.", L"Error" );
-			theApp.m_pFrmMain->PostMessage( WM_QUIT );
+			theApp.m_pFrmMain->MessageBox( L"Failed to create cityes xml.", L"Error", MB_ICONERROR );
+			theApp.m_pFrmMain->PostMessage( WM_CLOSE );
 			return;
 		}
 	}
@@ -103,10 +103,28 @@ void CWorkerThread::OnCheckForEssentialFiles( WPARAM wParam, LPARAM lParam )
 		if ( !CreateGenericMedicsXml() )
 		{
 			TRACE( L"@ CWorkerThread::OnCheckForEssentialFiles -> Failed to create medics xml\n" );
-			theApp.m_pFrmMain->MessageBox( L"Failed to create medics xml.", L"Error" );
-			theApp.m_pFrmMain->PostMessage( WM_QUIT );
+			theApp.m_pFrmMain->MessageBox( L"Failed to create medics xml.", L"Error", MB_ICONERROR );
+			theApp.m_pFrmMain->PostMessage( WM_CLOSE );
 			return;
 		}
+	}
+
+	// Check for sqlite dll
+	if ( !::PathFileExists( (theApp.m_pProgramData->GetCurrentDir() + L"\\" + theApp.m_pProgramData->GetSQLiteDLL()).GetBuffer() ) )
+	{
+		TRACE( L"@ CWorkerThread::OnCheckForEssentialFiles -> Failed to find sqlite3 dll\n" );
+		theApp.m_pFrmMain->MessageBox( L"Failed to find sqlite3 dll.", L"Error", MB_ICONERROR );
+		theApp.m_pFrmMain->PostMessage( WM_CLOSE );
+		return;
+	}
+
+	// Load sqlite dll
+	if ( !theApp.m_pProgramData->LoadSQLite() )
+	{
+		TRACE( L"@ CWorkerThread::OnCheckForEssentialFiles -> Failed to load functions from sqlite dll\n" );
+		theApp.m_pFrmMain->MessageBox( L"Failed to load functions from sqlite dll.", L"Error", MB_ICONERROR );
+		theApp.m_pFrmMain->PostMessage( WM_CLOSE );
+		return;
 	}
 
 	this->PostThreadMessage( WM_PARSE_CITIES_XML, NULL, NULL );
@@ -179,6 +197,7 @@ void CWorkerThread::OnInitMedic( WPARAM wParam, LPARAM lParam )
 		theApp.m_pProgramData->GetCurrentMedic().strFirstName + L"..." );
 
 	// TODO: Load patients
+	Sleep( 2000 );
 
 	theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_LOADED_MEDIC ) + L" " + 
 		theApp.m_pProgramData->GetCurrentMedic().strLastName + L" " +

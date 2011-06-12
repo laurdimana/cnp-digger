@@ -20,7 +20,8 @@ CProgramData::CProgramData()
 	// Init persons db, medics xml, cityes xml, exports dir, patients dir, temp dir
 	m_strPersonsDB.Append( PERSONS_DB );
 	m_strMedicsXML.Append( MEDICS_XML );
-	m_strCitiesXML.Append( CITiES_XML );
+	m_strCitiesXML.Append( CITIES_XML );
+	m_strSQLiteDLL.Append( SQLITE_DLL );
 	m_strExportsDir.Append( EXPORTS_DIR );
 	m_strPatientsDir.Append( PATIENTS_DIR );
 	m_strTempDir.Append( TEMP_DIR );
@@ -50,6 +51,11 @@ CString CProgramData::GetMedicsXML()
 CString CProgramData::GetCitiesXML()
 {
 	return m_strCitiesXML;
+}
+
+CString CProgramData::GetSQLiteDLL()
+{
+	return m_strSQLiteDLL;
 }
 
 CString CProgramData::GetExportsDir()
@@ -208,4 +214,33 @@ PATIENT CProgramData::GetPatientTemp( int nIndex )
 CMapStringToMedic *CProgramData::GetMedicsMap()
 {
 	return &m_MedicsMap;
+}
+
+//static int SQLiteCallback( void *NotUsed, int argc, char **argv, char **coln )
+//{
+//	for ( int i = 0; i < argc; i++ )
+//	{
+//		CString str( argv[ i ] );
+//
+//		TRACE( L"%s\t\t\t", str );
+//	}
+//	TRACE( L"\n" );
+//
+//	return 0;
+//}
+BOOL CProgramData::LoadSQLite()
+{
+	BOOL rc = m_db.LoadDll( GetCurrentDir() + L"\\" + GetSQLiteDLL() );
+
+	if ( !rc )
+		return FALSE;
+
+	rc = m_db.SQLiteOpen( GetCurrentDir() + L"\\" + GetPersonsDB() );
+
+	if ( !rc )
+		return FALSE;
+
+	//m_db.SQLiteExec( L"SELECT * FROM persons", SQLiteCallback );
+
+	return TRUE;
 }

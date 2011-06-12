@@ -23,10 +23,7 @@ BEGIN_MESSAGE_MAP( CFrmMain, CFrameWnd )
 	ON_COMMAND( FRM_MAIN_MNU_FILE_EXPORT, OnFileExport )
 END_MESSAGE_MAP()
 
-static UINT indicators[] =
-{
-	ID_SEPARATOR
-};
+static UINT indicators[] = { ID_SEPARATOR };
 
 ////////////////////////////////////////////// Constructor / Destructor //////////////////////////////////////////////////////
 
@@ -165,7 +162,7 @@ void CFrmMain::OnFileMedics()
 		}
 	}
 	else
-		this->PostMessage( WM_QUIT );
+		this->PostMessage( WM_CLOSE );
 }
 
 void CFrmMain::OnFileImport()

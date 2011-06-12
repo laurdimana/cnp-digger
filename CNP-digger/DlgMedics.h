@@ -6,7 +6,7 @@ class CDlgMedics : public CDialogEx
 {
 public:
 	CDlgMedics();
-	~CDlgMedics();
+	virtual ~CDlgMedics();
 
 // Dialog Data
 	enum { IDD = IDD_MEDICS };

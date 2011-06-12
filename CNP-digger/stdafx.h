@@ -47,7 +47,8 @@
 // Needed files and folders
 #define PERSONS_DB		L"Persons.db3"
 #define MEDICS_XML		L"Medics.xml"
-#define CITiES_XML		L"Cities.xml"
+#define CITIES_XML		L"Cities.xml"
+#define SQLITE_DLL		L"sqlite3.dll"
 #define EXPORTS_DIR		L"Exports"
 #define PATIENTS_DIR	L"Patients"
 #define TEMP_DIR		L"Temp"
