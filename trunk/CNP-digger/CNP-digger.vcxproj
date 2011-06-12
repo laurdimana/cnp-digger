@@ -112,6 +112,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SAXContentHandler.h" />
     <ClInclude Include="SAXErrorHandler.h" />
+    <ClInclude Include="SQLiteWrapper.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="WorkerThread.h" />
@@ -123,6 +124,7 @@
     <ClCompile Include="FrmMain.cpp" />
     <ClCompile Include="MedicsSaxContentHandler.cpp" />
     <ClCompile Include="ProgramData.cpp" />
+    <ClCompile Include="SQLiteWrapper.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
