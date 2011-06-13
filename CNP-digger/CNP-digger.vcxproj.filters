@@ -62,6 +62,9 @@
     <ClInclude Include="SQLiteWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PatientsSAXContentHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CNP-digger.cpp">
@@ -89,6 +92,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SQLiteWrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PatientsSAXContentHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

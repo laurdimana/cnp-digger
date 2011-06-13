@@ -21,6 +21,11 @@ BEGIN_MESSAGE_MAP( CFrmMain, CFrameWnd )
 	ON_COMMAND( FRM_MAIN_MNU_FILE_MEDICS, OnFileMedics )
 	ON_COMMAND( FRM_MAIN_MNU_FILE_IMPORT, OnFileImport )
 	ON_COMMAND( FRM_MAIN_MNU_FILE_EXPORT, OnFileExport )
+
+	ON_EN_CHANGE( FRM_MAIN_TXT_CNP, OnTxtCnpChange )
+	ON_BN_CLICKED( FRM_MAIN_BTN_GO, OnBtnGo )
+
+	ON_MESSAGE( WM_UPDATE_PATIENTS_TABLE, OnUpdatePatientsTable )
 END_MESSAGE_MAP()
 
 static UINT indicators[] = { ID_SEPARATOR };
@@ -50,6 +55,23 @@ BOOL CFrmMain::PreCreateWindow(CREATESTRUCT& cs)
 		::LoadIcon( AfxGetInstanceHandle(), MAKEINTRESOURCE( IDR_MAINFRAME ) ) );
 
 	return TRUE;
+}
+
+BOOL CFrmMain::PreTranslateMessage( MSG *pMsg )
+{
+	if ( pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN )
+	{
+		pMsg->wParam = NULL;
+
+		if ( this->GetFocus()->GetSafeHwnd() == m_txtCNP.GetSafeHwnd() )
+			OnBtnGo();
+
+		return 1;
+	}
+	else if ( IsDialogMessage( pMsg ) )
+		return 1;
+
+	return CFrameWnd::PreTranslateMessage( pMsg );
 }
 
 //////////////////////////////////////////////////// Events ///////////////////////////////////////////////////////////////
@@ -83,7 +105,7 @@ int CFrmMain::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	this->SetWindowPos( NULL, nWndX, nWndY, nWndW, nWndH, SWP_SHOWWINDOW );
 
 	// Create the cnp textbox
-	CRect crect( 10, 10, 330, 40 );
+	CRect crect( 10, 10, 270, 40 );
 	bSucc = m_txtCNP.CreateEx( 
 		WS_EX_CLIENTEDGE,
 		L"EDIT",
@@ -100,6 +122,22 @@ int CFrmMain::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 
 	m_txtCNP.SetFont( &m_fntSansSerif12 );
+
+	// Patients lbl
+	crect.SetRect( 280, 13, 330, 36 );
+	bSucc = m_lblPatients.Create(
+		L"0",
+		WS_CHILD | WS_VISIBLE | SS_CENTER | SS_SUNKEN,
+		crect,
+		this );
+
+	if ( !bSucc )
+	{
+		TRACE( L"@ CFrmMain::OnCreate -> Failed to create patients label\n" );
+		return -1;
+	}
+
+	m_lblPatients.SetFont( &m_fntSansSerif12 );
 
 	// Go button
 	crect.SetRect( 340, 10, 385, 40 );
@@ -134,9 +172,10 @@ int CFrmMain::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 
 	m_tblPatients.SetExtendedStyle( LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_INFOTIP | m_tblPatients.GetExtendedStyle() );
-	m_tblPatients.InsertColumn( 0, L"CNP", LVCFMT_LEFT, 100 );
-	m_tblPatients.InsertColumn( 1, L"Last Name", LVCFMT_LEFT, 120 );
-	m_tblPatients.InsertColumn( 2, L"First Name", LVCFMT_LEFT, 140 );
+	m_tblPatients.InsertColumn( 0, L"CNP", LVCFMT_LEFT, 90 );
+	m_tblPatients.InsertColumn( 1, L"Last Name", LVCFMT_LEFT, 110 );
+	m_tblPatients.InsertColumn( 2, L"First Name", LVCFMT_LEFT, 130 );
+	m_tblPatients.InsertColumn( 3, L"+", LVCFMT_LEFT, 20 );
 
 	m_txtCNP.SetFocus();
 
@@ -173,9 +212,81 @@ void CFrmMain::OnFileExport()
 {
 }
 
+void CFrmMain::OnTxtCnpChange()
+{
+	wchar_t *pszCnp = new wchar_t[ m_txtCNP.GetWindowTextLength() + 1 ];
+
+	m_txtCNP.GetWindowText( pszCnp, m_txtCNP.GetWindowTextLength() + 1 );
+
+	if ( theApp.m_pProgramData->IsCnpValid( pszCnp ) )
+		m_txtCNP.SetSel( 0, -1 );
+
+	this->PostMessage( WM_UPDATE_PATIENTS_TABLE, (WPARAM)pszCnp );
+}
+
+void CFrmMain::OnBtnGo()
+{
+	CString strCnp;
+
+	m_txtCNP.GetWindowText( strCnp );
+
+	if ( !theApp.m_pProgramData->IsCnpValid( strCnp.GetBuffer() ) ||
+		theApp.m_pProgramData->GetDisplayedPatients() > 0 )
+	{
+		m_txtCNP.SetWindowText( L"" );
+
+		return;
+	}
+
+	AfxMessageBox( L"TODO" );
+}
+
+LRESULT CFrmMain::OnUpdatePatientsTable( WPARAM wParam, LPARAM lParam )
+{
+	CString strSuffix = wParam ? (wchar_t*)wParam : L"";
+	int		index     = 0;
+
+	delete [] (wchar_t*)wParam;
+
+	m_tblPatients.DeleteAllItems();
+
+	// Add temp patients
+	CListPatients *list = theApp.m_pProgramData->GetTempPatientsList();
+	POSITION	  pos   = list->GetHeadPosition();
+
+	while ( pos )
+	{
+		PATIENT p = list->GetNext( pos );
+
+		if ( strSuffix.IsEmpty() || p.strID.Left( strSuffix.GetLength() ) == strSuffix )
+			AddPatientToTable( index++, p.strID, p.strLastName, p.strFirstName, TRUE );
+	}
+
+	//Add patients
+	list = theApp.m_pProgramData->GetPatientsList();
+	pos  = list->GetHeadPosition();
+
+	while ( pos )
+	{
+		PATIENT p = list->GetNext( pos );
+
+		if ( strSuffix.IsEmpty() || p.strID.Left( strSuffix.GetLength() ) == strSuffix )
+			AddPatientToTable( index++, p.strID, p.strLastName, p.strFirstName );
+	}
+
+	// Update current number of patients
+	theApp.m_pProgramData->SetDislayedPatients( index );
+	strSuffix.Format( L"%d", index );
+	m_lblPatients.SetWindowText( strSuffix );
+
+	m_txtCNP.SetFocus();
+
+	return (LRESULT)0;
+}
+
 //////////////////////////////////////////////////////// Methods /////////////////////////////////////////////////////////
 
-BOOL CFrmMain::AddPatientToTable( int nNo, CString strCNP, CString strLastName, CString strFirstName )
+BOOL CFrmMain::AddPatientToTable( int nNo, CString strCNP, CString strLastName, CString strFirstName, BOOL bTemp )
 {
 	LVITEM lvi = { 0 };
 
@@ -196,6 +307,14 @@ BOOL CFrmMain::AddPatientToTable( int nNo, CString strCNP, CString strLastName, 
 	lvi.iSubItem = 2;
 	lvi.pszText  = strFirstName.GetBuffer();
 	m_tblPatients.SetItem( &lvi );
+
+	// Temp
+	if ( bTemp )
+	{
+		lvi.iSubItem = 3;
+		lvi.pszText  = TEMP_TABLE_MARKER;
+		m_tblPatients.SetItem( &lvi );
+	}
 
 	return TRUE;
 }

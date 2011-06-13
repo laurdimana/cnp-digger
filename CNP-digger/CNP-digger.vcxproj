@@ -108,6 +108,7 @@
     <ClInclude Include="DlgMedics.h" />
     <ClInclude Include="FrmMain.h" />
     <ClInclude Include="MedicsSAXContentHandler.h" />
+    <ClInclude Include="PatientsSAXContentHandler.h" />
     <ClInclude Include="ProgramData.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SAXContentHandler.h" />
@@ -123,6 +124,7 @@
     <ClCompile Include="DlgMedics.cpp" />
     <ClCompile Include="FrmMain.cpp" />
     <ClCompile Include="MedicsSaxContentHandler.cpp" />
+    <ClCompile Include="PatientsSAXContentHandler.cpp" />
     <ClCompile Include="ProgramData.cpp" />
     <ClCompile Include="SQLiteWrapper.cpp" />
     <ClCompile Include="stdafx.cpp">

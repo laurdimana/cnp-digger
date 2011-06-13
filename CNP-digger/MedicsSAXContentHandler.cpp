@@ -32,7 +32,7 @@ HRESULT STDMETHODCALLTYPE MedicsSAXContentHandler::startElement(
 		CString strFirstName = GetAttributeValue( pAttributes, XML_MEDIC_FIRST_NAME );
 
 		// Add a medic
-		if ( strID.GetLength() > 0 && strLastName.GetLength() > 0 && strFirstName.GetLength() > 0 )
+		if ( !strID.IsEmpty() && !strLastName.IsEmpty() && !strFirstName.IsEmpty() )
 		{
 			theApp.m_pProgramData->AddMedic( strID, strLastName, strFirstName );
 		}

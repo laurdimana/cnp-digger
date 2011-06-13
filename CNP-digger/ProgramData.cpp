@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "ProgramData.h"
 
+static const int sCNP[] = { 2, 7, 9, 1, 4, 6, 3, 5, 8, 2, 7, 9 };
+
 ///////////////////////////////////////////// Constructor / Destructor /////////////////////////////////////////////
 
 CProgramData::CProgramData()
@@ -8,6 +10,7 @@ CProgramData::CProgramData()
 	m_MedicsMap.InitHashTable( INIT_MEDICS_HASH_TABLE );
 	m_CitiesMap.InitHashTable( INIT_CITIES_HASH_TABLE );
 	m_CurrentMedic.strID = L"";
+	m_nDisplayedPatients = 0;
 
 	// Init current dir
 	wchar_t *pszPath = new wchar_t[ MAX_PATH ];
@@ -92,6 +95,28 @@ BOOL CProgramData::ToUTF8( wchar_t *pszIn, int nInLen, char *pszOut, int *nOutLe
 	return TRUE;
 }
 
+BOOL CProgramData::IsCnpValid( wchar_t *pszCnp )
+{
+	if ( wcslen( pszCnp ) != 13 )
+		return FALSE;
+
+	int S = 0;
+
+	for ( int i = 0; i < 12 ; i++ )
+	{
+		CString strC( pszCnp[ i ] );
+
+		S += _wtoi( strC ) * sCNP[ i ];
+	}
+
+	int R = S - 11 * (S / 11);
+	R = (R == 10) ? 1 : R;
+
+	CString strC( pszCnp[ 12 ] );
+
+	return _wtoi( strC ) == R;
+}
+
 void CProgramData::AddMedic( CString strID, CString strLastName, CString strFirstName )
 {
 	MEDIC medic;
@@ -111,47 +136,43 @@ void CProgramData::AddCity( CString strID, CString strName, CString strDistrict 
 	city.strName	 = strName;
 	city.strDistrict = strDistrict;
 
-	m_CitiesMap[ strID ] = city;
+	m_CitiesMap[ strName ] = city;
 
-	TRACE( L"@ CProgramData::AddCity -> Load city %s, %s\n", m_CitiesMap[ strID ].strName, m_CitiesMap[ strID ].strDistrict );
+	TRACE( L"@ CProgramData::AddCity -> Load city %s, %s, %s\n", m_CitiesMap[ strName ].strName, m_CitiesMap[ strName ].strID, m_CitiesMap[ strName ].strDistrict );
 }
 
-void CProgramData::AddPatient( CString strID, CString strLastName, CString strFirstName, CString strCityName )
+void CProgramData::AddPatient( CString strID, CString strLastName, CString strFirstName, CString strCityCode )
 {
 	PATIENT patient;
-	patient.strID = strID;
-	patient.strLastName = strLastName;
+	patient.strID		 = strID;
+	patient.strLastName  = strLastName;
 	patient.strFirstName = strFirstName;
-	patient.strCityName = strCityName;
+	patient.strCityCode  = strCityCode;
 
 	m_PatientsList.AddTail( patient );
 
-	TRACE( L"@ CProgramData::AddPatient -> Load patient %s %s %s %s %s %s\n",
+	TRACE( L"@ CProgramData::AddPatient -> Load patient %s %s %s %s\n",
 		m_PatientsList.GetTail().strID,
 		m_PatientsList.GetTail().strLastName,
 		m_PatientsList.GetTail().strFirstName,
-		m_PatientsList.GetTail().strCityName,
-		m_CitiesMap[ m_PatientsList.GetTail().strCityName ].strID,
-		m_CitiesMap[ m_PatientsList.GetTail().strCityName ].strDistrict );
+		m_PatientsList.GetTail().strCityCode );
 }
 
-void CProgramData::AddPatientTemp( CString strID, CString strLastName, CString strFirstName, CString strCityName )
+void CProgramData::AddPatientTemp( CString strID, CString strLastName, CString strFirstName, CString strCityCode )
 {
 	PATIENT patient;
-	patient.strID = strID;
-	patient.strLastName = strLastName;
+	patient.strID		 = strID;
+	patient.strLastName  = strLastName;
 	patient.strFirstName = strFirstName;
-	patient.strCityName = strCityName;
+	patient.strCityCode  = strCityCode;
 
 	m_PatientsListTemp.AddTail( patient );
 
-	TRACE( L"@ CProgramData::AddPatientTemp -> Load patient %s %s %s %s %s %s\n",
+	TRACE( L"@ CProgramData::AddPatientTemp -> Load patient %s %s %s %s\n",
 		m_PatientsListTemp.GetTail().strID,
 		m_PatientsListTemp.GetTail().strLastName,
 		m_PatientsListTemp.GetTail().strFirstName,
-		m_PatientsListTemp.GetTail().strCityName,
-		m_CitiesMap[ m_PatientsListTemp.GetTail().strCityName ].strID,
-		m_CitiesMap[ m_PatientsListTemp.GetTail().strCityName ].strDistrict );
+		m_PatientsListTemp.GetTail().strCityCode );
 }
 
 void CProgramData::CreateMedic( CString strID, CString strLastName, CString strFirstName )
@@ -162,13 +183,18 @@ void CProgramData::CreateCity( CString strID, CString strName, CString strDistri
 {
 }
 
-void CProgramData::CreatePatientTemp( CString strID, CString strLastName, CString strFirstName, CString strCityName )
+void CProgramData::CreatePatientTemp( CString strID, CString strLastName, CString strFirstName, CString strCityCode )
 {
 }
 
 void CProgramData::SetCurrentMedic( MEDIC medic )
 {
 	m_CurrentMedic = medic;
+}
+
+void CProgramData::SetDislayedPatients( int nPatients )
+{
+	m_nDisplayedPatients = nPatients;
 }
 
 int CProgramData::GetMedics()
@@ -184,6 +210,16 @@ int CProgramData::GetCities()
 int CProgramData::GetPatients()
 {
 	return m_PatientsList.GetCount();
+}
+
+int CProgramData::GetTempPatients()
+{
+	return m_PatientsListTemp.GetCount();
+}
+
+int CProgramData::GetDisplayedPatients()
+{
+	return m_nDisplayedPatients;
 }
 
 MEDIC CProgramData::GetMedic( CString strID )
@@ -214,6 +250,16 @@ PATIENT CProgramData::GetPatientTemp( int nIndex )
 CMapStringToMedic *CProgramData::GetMedicsMap()
 {
 	return &m_MedicsMap;
+}
+
+CListPatients *CProgramData::GetPatientsList()
+{
+	return &m_PatientsList;
+}
+
+CListPatients *CProgramData::GetTempPatientsList()
+{
+	return &m_PatientsListTemp;
 }
 
 //static int SQLiteCallback( void *NotUsed, int argc, char **argv, char **coln )

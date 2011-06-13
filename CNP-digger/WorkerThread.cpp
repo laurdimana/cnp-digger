@@ -3,13 +3,15 @@
 #include "CNP-digger.h"
 #include "MedicsSAXContentHandler.h"
 #include "CitiesSAXContentHandler.h"
+#include "PatientsSAXContentHandler.h"
 #include "SAXErrorHandler.h"
 
 BEGIN_MESSAGE_MAP( CWorkerThread, CWinThread )
-	ON_THREAD_MESSAGE( WM_CHECK_FOR_ESSENTIAL_FILES, OnCheckForEssentialFiles )
-	ON_THREAD_MESSAGE( WM_PARSE_MEDICS_XML, OnParseMedicsXML )
-	ON_THREAD_MESSAGE( WM_PARSE_CITIES_XML, OnParseCitiesXML )
-	ON_THREAD_MESSAGE( WM_INIT_MEDIC, OnInitMedic )
+	ON_THREAD_MESSAGE( WM_CHECK_FOR_ESSENTIAL_FILES,	OnCheckForEssentialFiles )
+	ON_THREAD_MESSAGE( WM_PARSE_MEDICS_XML,				OnParseMedicsXML )
+	ON_THREAD_MESSAGE( WM_PARSE_CITIES_XML,				OnParseCitiesXML )
+	ON_THREAD_MESSAGE( WM_INIT_MEDIC,					OnInitMedic )
+	ON_THREAD_MESSAGE( WM_PARSE_PATIENTS_XML,			OnParsePatientsXML )
 END_MESSAGE_MAP()
 
 ///////////////////////////////////////////////// Constructor / Destructor ///////////////////////////////////////////
@@ -127,9 +129,11 @@ void CWorkerThread::OnCheckForEssentialFiles( WPARAM wParam, LPARAM lParam )
 		return;
 	}
 
-	this->PostThreadMessage( WM_PARSE_CITIES_XML, NULL, NULL );
+	OnParseCitiesXML();
 
-	this->PostThreadMessage( WM_PARSE_MEDICS_XML, NULL, NULL );
+	OnParseMedicsXML();
+
+	theApp.m_pFrmMain->PostMessage( WM_COMMAND, MAKELONG( FRM_MAIN_MNU_FILE_MEDICS, 0 ) );
 }
 
 void CWorkerThread::OnParseMedicsXML( WPARAM wParam, LPARAM lParam )
@@ -158,8 +162,6 @@ void CWorkerThread::OnParseMedicsXML( WPARAM wParam, LPARAM lParam )
 	}
 
 	CoUninitialize();
-
-	theApp.m_pFrmMain->PostMessage( WM_COMMAND, MAKELONG( FRM_MAIN_MNU_FILE_MEDICS, 0 ) );
 }
 
 void CWorkerThread::OnParseCitiesXML( WPARAM wParam, LPARAM lParam )
@@ -196,12 +198,72 @@ void CWorkerThread::OnInitMedic( WPARAM wParam, LPARAM lParam )
 		theApp.m_pProgramData->GetCurrentMedic().strLastName + L" " +
 		theApp.m_pProgramData->GetCurrentMedic().strFirstName + L"..." );
 
-	// TODO: Load patients
-	Sleep( 2000 );
+	// Check for patients xml
+	CString strPath = theApp.m_pProgramData->GetCurrentDir() + L"\\" + PATIENTS_DIR + L"\\" +
+		theApp.m_pProgramData->GetCurrentMedic().strLastName + L"-" + 
+		theApp.m_pProgramData->GetCurrentMedic().strFirstName + L"-" + 
+		theApp.m_pProgramData->GetCurrentMedic().strID + L".xml";
+
+	if ( ::PathFileExists( strPath ) )
+	{
+		wchar_t *pszPath = new wchar_t[ strPath.GetLength() + 1 ];
+		wcscpy_s( pszPath, strPath.GetLength() + 1, strPath.GetBuffer() );
+
+		OnParsePatientsXML( (WPARAM)pszPath );
+	}
+
+	// Check for temp patients xml
+	strPath = theApp.m_pProgramData->GetCurrentDir() + L"\\" + TEMP_DIR + L"\\" +
+		theApp.m_pProgramData->GetCurrentMedic().strLastName + L"-" + 
+		theApp.m_pProgramData->GetCurrentMedic().strFirstName + L"-" + 
+		theApp.m_pProgramData->GetCurrentMedic().strID + L"-" + 
+		TEMP_DIR + L".xml";
+
+	if ( ::PathFileExists( strPath )  )
+	{
+		wchar_t *pszPath = new wchar_t[ strPath.GetLength() + 1 ];
+		wcscpy_s( pszPath, strPath.GetLength() + 1, strPath.GetBuffer() );
+
+		OnParsePatientsXML( (WPARAM)pszPath, TRUE );
+	}
 
 	theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_LOADED_MEDIC ) + L" " + 
 		theApp.m_pProgramData->GetCurrentMedic().strLastName + L" " +
 		theApp.m_pProgramData->GetCurrentMedic().strFirstName );
+
+	theApp.m_pFrmMain->PostMessage( WM_UPDATE_PATIENTS_TABLE );
+}
+
+void CWorkerThread::OnParsePatientsXML( WPARAM wParam, LPARAM lParam )
+{
+	wchar_t *pszXml = (wchar_t*)wParam;
+	BOOL	bTemp   = (BOOL)lParam;
+
+	CoInitialize( NULL );
+	ISAXXMLReader *pXMLReader = NULL;
+
+	HRESULT hr = CoCreateInstance(
+		__uuidof( SAXXMLReader ),
+		NULL,
+		CLSCTX_ALL,
+		__uuidof( ISAXXMLReader ),
+		(void **)&pXMLReader );
+
+	if ( !FAILED( hr ) )
+	{
+		PatientsSAXContentHandler *pPatientsHandler = new PatientsSAXContentHandler( bTemp );
+		hr = pXMLReader->putContentHandler( pPatientsHandler );
+
+		SAXErrorHandler *pErrorHandler = new SAXErrorHandler();
+		hr = pXMLReader->putErrorHandler( pErrorHandler );
+
+		hr = pXMLReader->parseURL( pszXml );
+
+		pXMLReader->Release();
+	}
+
+	delete [] pszXml;
+	CoUninitialize();
 }
 
 //////////////////////////////////////////////////// Methods //////////////////////////////////////////////////////////

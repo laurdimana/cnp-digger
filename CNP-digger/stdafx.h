@@ -42,6 +42,8 @@
 #define WM_PARSE_MEDICS_XML				WM_USER + 2
 #define WM_PARSE_CITIES_XML				WM_USER + 3
 #define WM_INIT_MEDIC					WM_USER + 4
+#define WM_PARSE_PATIENTS_XML			WM_USER + 5
+#define WM_UPDATE_PATIENTS_TABLE		WM_USER + 6
 
 
 // Needed files and folders
@@ -68,9 +70,22 @@
 #define XML_MEDIC_FIRST_NAME	L"firstName"
 #define XML_MEDIC_ID			L"id"
 
+#define XML_PERSONS							L"parsons"
+#define XML_PERSON							L"person"
+#define XML_PERSON_PID						L"pid"
+#define XML_PERSON_FIRST_NAME				L"firstName"
+#define XML_PERSON_LAST_NAME				L"lastName"
+#define XML_PERSON_GENDER					L"gender"
+#define XML_PERSON_BIRTH_DATE				L"birthDate"
+#define XML_PERSON_UNIT						L"unitOfPayment"
+#define XML_PERSON_ADDRESS					L"address"
+#define XML_PERSON_ADDRESS_CITY_CODE		L"cityCode"
+#define XML_PERSON_ADDRESS_DISTRICT_CODE	L"districtCode"
+
 // General constants
-#define XML_HEADER			L"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-#define CITY_DISTRICT_CODE	L"TR"
+#define XML_HEADER				L"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+#define CITY_DISTRICT_CODE		L"TR"
+#define TEMP_TABLE_MARKER		L"*"
 #define INIT_MEDICS_HASH_TABLE	29
 #define INIT_CITIES_HASH_TABLE	499
 
@@ -94,7 +109,7 @@ struct PATIENT
 	CString strID,
 			strLastName,
 			strFirstName,
-			strCityName;
+			strCityCode;
 };
 
 typedef CMap<CString, LPCWSTR, MEDIC, MEDIC&> CMapStringToMedic;

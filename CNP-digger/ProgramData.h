@@ -14,12 +14,13 @@ public:
 // Setters
 	void AddMedic( CString strID, CString strLastName, CString strFirstName );
 	void AddCity( CString strID, CString strName, CString strDistrict );
-	void AddPatient( CString strID, CString strLastName, CString strFirstName, CString strCityName );
-	void AddPatientTemp( CString strID, CString strLastName, CString strFirstName, CString strCityName );
+	void AddPatient( CString strID, CString strLastName, CString strFirstName, CString strCityCode );
+	void AddPatientTemp( CString strID, CString strLastName, CString strFirstName, CString strCityCode );
 	void CreateMedic( CString strID, CString strLastName, CString strFirstName );
 	void CreateCity( CString strID, CString strName, CString strDistrict );
-	void CreatePatientTemp( CString strID, CString strLastName, CString strFirstName, CString strCityName );
+	void CreatePatientTemp( CString strID, CString strLastName, CString strFirstName, CString strCityCode );
 	void SetCurrentMedic( MEDIC medic );
+	void SetDislayedPatients( int nPatients );
 
 // Getters
 	CString GetCurrentDir();
@@ -34,6 +35,8 @@ public:
 	int GetMedics();
 	int GetCities();
 	int GetPatients();
+	int GetTempPatients();
+	int GetDisplayedPatients();
 
 	MEDIC   GetMedic( CString strID );
 	MEDIC	GetCurrentMedic();
@@ -42,11 +45,14 @@ public:
 	PATIENT GetPatientTemp( int nIndex );
 
 	CMapStringToMedic *GetMedicsMap();
+	CListPatients	  *GetPatientsList();
+	CListPatients	  *GetTempPatientsList();
 
 	BOOL LoadSQLite();
 
 // Helpers
 	BOOL ToUTF8( wchar_t *pszIn, int nInLen, char *pszOut, int *nOutLen );
+	BOOL IsCnpValid( wchar_t *pszCnp );
 
 // Members
 protected:
@@ -65,6 +71,7 @@ protected:
 					  m_PatientsListTemp;
 
 	MEDIC m_CurrentMedic;
+	int   m_nDisplayedPatients;
 
 	CSQLiteWrapper m_db;
 };
