@@ -31,8 +31,7 @@ HRESULT STDMETHODCALLTYPE CitiesSAXContentHandler::startElement(
 		CString strName		= GetAttributeValue( pAttributes, XML_CITY_NAME );
 		CString strDistrict = CITY_DISTRICT_CODE;
 
-		// Add a city
-		if ( strID.GetLength() > 0 && strName.GetLength() > 0 && strDistrict.GetLength() > 0 )
+		if ( !strID.IsEmpty() && !strName.IsEmpty() && !strDistrict.IsEmpty() )
 			theApp.m_pProgramData->AddCity( strID, strName, strDistrict );
 	}
 

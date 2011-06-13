@@ -19,10 +19,11 @@ public:
 
 // Message map
 protected:
-	afx_msg void OnCheckForEssentialFiles( WPARAM wParam, LPARAM lParam );
-	afx_msg void OnParseMedicsXML( WPARAM wParam, LPARAM lParam );
-	afx_msg void OnParseCitiesXML( WPARAM wParam, LPARAM lParam );
-	afx_msg void OnInitMedic( WPARAM wParam, LPARAM lParam );
+	afx_msg void OnCheckForEssentialFiles( WPARAM wParam = 0, LPARAM lParam = 0 );
+	afx_msg void OnParseMedicsXML( WPARAM wParam = 0, LPARAM lParam = 0 );
+	afx_msg void OnParseCitiesXML( WPARAM wParam = 0, LPARAM lParam = 0 );
+	afx_msg void OnInitMedic( WPARAM wParam = 0, LPARAM lParam = 0 );
+	afx_msg void OnParsePatientsXML( WPARAM wParam, LPARAM lParam = FALSE );
 
 	DECLARE_MESSAGE_MAP()
 };

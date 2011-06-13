@@ -17,11 +17,12 @@ protected:
 
 // Overrides
 public:
-	virtual BOOL PreCreateWindow( CREATESTRUCT& cs );	
+	virtual BOOL PreCreateWindow( CREATESTRUCT& cs );
+	virtual BOOL PreTranslateMessage( MSG *pMsg );
 
 // Methods
 protected:
-	BOOL AddPatientToTable( int nNo, CString strCNP, CString strLastName, CString strFirstName );
+	BOOL AddPatientToTable( int nNo, CString strCNP, CString strLastName, CString strFirstName, BOOL bTemp = FALSE );
 
 public:
 	void SetStatus( CString strMsg );
@@ -35,6 +36,7 @@ protected:
 	CEdit	   m_txtCNP;
 	CListCtrl  m_tblPatients;
 	CButton	   m_btnGo;
+	CStatic	   m_lblPatients;
 
 // Message map
 protected:
@@ -43,6 +45,11 @@ protected:
 	afx_msg void OnFileMedics();
 	afx_msg void OnFileImport();
 	afx_msg void OnFileExport();
+
+	afx_msg void OnTxtCnpChange();
+	afx_msg void OnBtnGo();
+
+	afx_msg LRESULT OnUpdatePatientsTable( WPARAM wParam = NULL, LPARAM lParam = NULL );
 
 	DECLARE_MESSAGE_MAP()
 };
