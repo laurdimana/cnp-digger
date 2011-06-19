@@ -44,6 +44,8 @@
 #define WM_INIT_MEDIC					WM_USER + 4
 #define WM_PARSE_PATIENTS_XML			WM_USER + 5
 #define WM_UPDATE_PATIENTS_TABLE		WM_USER + 6
+#define WM_DIG_FOR_CNP					WM_USER + 7
+#define WM_ADD_TEMP_PATIENT_TO_XML		WM_USER + 8
 
 
 // Needed files and folders
@@ -70,7 +72,7 @@
 #define XML_MEDIC_FIRST_NAME	L"firstName"
 #define XML_MEDIC_ID			L"id"
 
-#define XML_PERSONS							L"parsons"
+#define XML_PERSONS							L"persons"
 #define XML_PERSON							L"person"
 #define XML_PERSON_PID						L"pid"
 #define XML_PERSON_FIRST_NAME				L"firstName"
@@ -84,10 +86,18 @@
 
 // General constants
 #define XML_HEADER				L"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+#define XML_PERSONS_XMLNS		L"xmlns=\"http://localhost\""
+#define XML_UNIT_OF_PAYMENT		L"CAS-TR"
+#define XML_DISTRICT_CODE		L"TR"
 #define CITY_DISTRICT_CODE		L"TR"
 #define TEMP_TABLE_MARKER		L"*"
 #define INIT_MEDICS_HASH_TABLE	29
 #define INIT_CITIES_HASH_TABLE	499
+#define DB_TABLE_NAME			L"dbf2sqlite"
+#define DB_CNP					L"cnp"
+#define DB_LAST_NAME			L"nume"
+#define DB_FIRST_NAME			L"prenume"
+#define DB_CITY					L"localitate"
 
 // Structs
 struct MEDIC

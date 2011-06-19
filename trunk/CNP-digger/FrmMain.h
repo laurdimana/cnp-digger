@@ -27,6 +27,7 @@ protected:
 public:
 	void SetStatus( CString strMsg );
 	void SetWndTitle( CString strTitle );
+	void ResetTxtCnp();
 
 // Members
 protected:
