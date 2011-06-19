@@ -175,18 +175,6 @@ void CProgramData::AddPatientTemp( CString strID, CString strLastName, CString s
 		m_PatientsListTemp.GetTail().strCityCode );
 }
 
-void CProgramData::CreateMedic( CString strID, CString strLastName, CString strFirstName )
-{
-}
-
-void CProgramData::CreateCity( CString strID, CString strName, CString strDistrict )
-{
-}
-
-void CProgramData::CreatePatientTemp( CString strID, CString strLastName, CString strFirstName, CString strCityCode )
-{
-}
-
 void CProgramData::SetCurrentMedic( MEDIC medic )
 {
 	m_CurrentMedic = medic;
@@ -262,18 +250,6 @@ CListPatients *CProgramData::GetTempPatientsList()
 	return &m_PatientsListTemp;
 }
 
-//static int SQLiteCallback( void *NotUsed, int argc, char **argv, char **coln )
-//{
-//	for ( int i = 0; i < argc; i++ )
-//	{
-//		CString str( argv[ i ] );
-//
-//		TRACE( L"%s\t\t\t", str );
-//	}
-//	TRACE( L"\n" );
-//
-//	return 0;
-//}
 BOOL CProgramData::LoadSQLite()
 {
 	BOOL rc = m_db.LoadDll( GetCurrentDir() + L"\\" + GetSQLiteDLL() );
@@ -286,7 +262,10 @@ BOOL CProgramData::LoadSQLite()
 	if ( !rc )
 		return FALSE;
 
-	//m_db.SQLiteExec( L"SELECT * FROM persons", SQLiteCallback );
-
 	return TRUE;
+}
+
+BOOL CProgramData::SQLiteExec( CString strSQL, int (*pCallback)( void*, int, char**, char** ), CString strErrMsg )
+{
+	return m_db.SQLiteExec( strSQL, pCallback, strErrMsg );
 }

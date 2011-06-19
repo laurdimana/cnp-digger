@@ -16,9 +16,6 @@ public:
 	void AddCity( CString strID, CString strName, CString strDistrict );
 	void AddPatient( CString strID, CString strLastName, CString strFirstName, CString strCityCode );
 	void AddPatientTemp( CString strID, CString strLastName, CString strFirstName, CString strCityCode );
-	void CreateMedic( CString strID, CString strLastName, CString strFirstName );
-	void CreateCity( CString strID, CString strName, CString strDistrict );
-	void CreatePatientTemp( CString strID, CString strLastName, CString strFirstName, CString strCityCode );
 	void SetCurrentMedic( MEDIC medic );
 	void SetDislayedPatients( int nPatients );
 
@@ -49,6 +46,7 @@ public:
 	CListPatients	  *GetTempPatientsList();
 
 	BOOL LoadSQLite();
+	BOOL SQLiteExec( CString strSQL, int (*pCallback)( void*,int,char**,char** ), CString strErrMsg = NULL );
 
 // Helpers
 	BOOL ToUTF8( wchar_t *pszIn, int nInLen, char *pszOut, int *nOutLen );

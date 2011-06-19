@@ -226,19 +226,21 @@ void CFrmMain::OnTxtCnpChange()
 
 void CFrmMain::OnBtnGo()
 {
-	CString strCnp;
+	wchar_t *pszCnp = new wchar_t[ m_txtCNP.GetWindowTextLength() + 1 ];
 
-	m_txtCNP.GetWindowText( strCnp );
+	m_txtCNP.GetWindowText( pszCnp, m_txtCNP.GetWindowTextLength() + 1 );
 
-	if ( !theApp.m_pProgramData->IsCnpValid( strCnp.GetBuffer() ) ||
+	if ( !theApp.m_pProgramData->IsCnpValid( pszCnp ) ||
 		theApp.m_pProgramData->GetDisplayedPatients() > 0 )
 	{
-		m_txtCNP.SetWindowText( L"" );
+		ResetTxtCnp();
+		SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
+		delete [] pszCnp;
 
 		return;
 	}
 
-	AfxMessageBox( L"TODO" );
+	theApp.m_pWorkerThread->PostThreadMessage( WM_DIG_FOR_CNP, (WPARAM)pszCnp, (LPARAM)TRUE );
 }
 
 LRESULT CFrmMain::OnUpdatePatientsTable( WPARAM wParam, LPARAM lParam )
@@ -330,4 +332,10 @@ void CFrmMain::SetWndTitle( CString strTitle )
 
 	strWndTitle.LoadString( AFX_IDS_APP_TITLE );
 	this->SetWindowText( strWndTitle + strTitle );
+}
+
+void CFrmMain::ResetTxtCnp()
+{
+	m_txtCNP.SetWindowText( L"" );
+	m_txtCNP.SetFocus();
 }
