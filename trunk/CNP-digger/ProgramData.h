@@ -51,6 +51,7 @@ public:
 // Helpers
 	BOOL ToUTF8( wchar_t *pszIn, int nInLen, char *pszOut, int *nOutLen );
 	BOOL IsCnpValid( wchar_t *pszCnp );
+	BOOL PositionInFile( CFile *f, char *pUTF8, int nUTF8, int nPos = CFile::current, BOOL bBackwards = FALSE, LONGLONG lStartOffset = 0 );
 
 // Members
 protected:

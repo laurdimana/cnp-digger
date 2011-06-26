@@ -46,6 +46,8 @@
 #define WM_UPDATE_PATIENTS_TABLE		WM_USER + 6
 #define WM_DIG_FOR_CNP					WM_USER + 7
 #define WM_ADD_TEMP_PATIENT_TO_XML		WM_USER + 8
+#define WM_IMPORT_PATIENTS_XML			WM_USER + 9
+#define WM_EXPORT_TEMP_PATIENTS			WM_USER + 10
 
 
 // Needed files and folders
@@ -98,6 +100,7 @@
 #define DB_LAST_NAME			L"nume"
 #define DB_FIRST_NAME			L"prenume"
 #define DB_CITY					L"localitate"
+#define EXPORTED_XML			L"exported"
 
 // Structs
 struct MEDIC

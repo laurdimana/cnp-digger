@@ -14,6 +14,8 @@ BEGIN_MESSAGE_MAP( CWorkerThread, CWinThread )
 	ON_THREAD_MESSAGE( WM_PARSE_PATIENTS_XML,			OnParsePatientsXML )
 	ON_THREAD_MESSAGE( WM_DIG_FOR_CNP,					OnDigForCnp )
 	ON_THREAD_MESSAGE( WM_ADD_TEMP_PATIENT_TO_XML,		OnAddTempPatientToXml )
+	ON_THREAD_MESSAGE( WM_IMPORT_PATIENTS_XML,			OnImportPatientsXml )
+	ON_THREAD_MESSAGE( WM_EXPORT_TEMP_PATIENTS,			OnExportTempPatients )
 END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////// Static ///////////////////////////////////////////////////////////
@@ -219,10 +221,9 @@ void CWorkerThread::OnInitMedic( WPARAM wParam, LPARAM lParam )
 
 	if ( ::PathFileExists( strPath ) )
 	{
-		wchar_t *pszPath = new wchar_t[ strPath.GetLength() + 1 ];
-		wcscpy_s( pszPath, strPath.GetLength() + 1, strPath.GetBuffer() );
+		CString *pstrPath = new CString( strPath );
 
-		OnParsePatientsXML( (WPARAM)pszPath );
+		OnParsePatientsXML( (WPARAM)pstrPath );
 	}
 
 	// Check for temp patients xml
@@ -234,10 +235,9 @@ void CWorkerThread::OnInitMedic( WPARAM wParam, LPARAM lParam )
 
 	if ( ::PathFileExists( strPath )  )
 	{
-		wchar_t *pszPath = new wchar_t[ strPath.GetLength() + 1 ];
-		wcscpy_s( pszPath, strPath.GetLength() + 1, strPath.GetBuffer() );
+		CString *pstrPath = new CString( strPath );
 
-		OnParsePatientsXML( (WPARAM)pszPath, TRUE );
+		OnParsePatientsXML( (WPARAM)pstrPath, TRUE );
 	}
 
 	theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_LOADED_MEDIC ) + L" " + 
@@ -249,8 +249,8 @@ void CWorkerThread::OnInitMedic( WPARAM wParam, LPARAM lParam )
 
 void CWorkerThread::OnParsePatientsXML( WPARAM wParam, LPARAM lParam )
 {
-	wchar_t *pszXml = (wchar_t*)wParam;
-	BOOL	bTemp   = (BOOL)lParam;
+	CString *pstrXml = (CString*)wParam;
+	BOOL	bTemp    = (BOOL)lParam;
 
 	CoInitialize( NULL );
 	ISAXXMLReader *pXMLReader = NULL;
@@ -270,38 +270,38 @@ void CWorkerThread::OnParsePatientsXML( WPARAM wParam, LPARAM lParam )
 		SAXErrorHandler *pErrorHandler = new SAXErrorHandler();
 		hr = pXMLReader->putErrorHandler( pErrorHandler );
 
-		hr = pXMLReader->parseURL( pszXml );
+		hr = pXMLReader->parseURL( pstrXml->GetBuffer() );
 
 		pXMLReader->Release();
 	}
 
-	delete [] pszXml;
+	delete pstrXml;
 	CoUninitialize();
 }
 
 void CWorkerThread::OnDigForCnp( WPARAM wParam, LPARAM lParam )
 {
-	CString strCnp = (wchar_t*)wParam;
-	BOOL	bCount = (BOOL)lParam;
-
-	delete [] (wchar_t*)wParam;
+	CString *pstrCnp = (CString*)wParam;
+	BOOL	bCount   = (BOOL)lParam;
 
 	CString strQuery;
 
 	if ( bCount )
 	{
 		strQuery.Format( L"SELECT COUNT(*), %s FROM %s WHERE %s='%s'", 
-			strCnp,
+			*pstrCnp,
 			DB_TABLE_NAME, 
-			DB_CNP, strCnp );
+			DB_CNP, *pstrCnp );
 	}
 	else
 	{
 		strQuery.Format( L"SELECT %s, %s, %s, %s FROM %s WHERE %s='%s'",
 			DB_CNP, DB_LAST_NAME, DB_FIRST_NAME, DB_CITY,
 			DB_TABLE_NAME,
-			DB_CNP, strCnp );
+			DB_CNP, *pstrCnp );
 	}
+
+	delete pstrCnp;
 
 	TRACE( L"@ CWorkerThread::OnDigForCnp -> %s\n", strQuery );
 
@@ -325,6 +325,7 @@ void CWorkerThread::OnAddTempPatientToXml( WPARAM wParam, LPARAM lParam )
 		{
 			TRACE( L"@ CWorkerThread::OnAddTempPatientToXml -> Failed CreateGeneticTempPatientsXml\n" );
 			delete p;
+			theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
 
 			return;
 		}
@@ -335,8 +336,9 @@ void CWorkerThread::OnAddTempPatientToXml( WPARAM wParam, LPARAM lParam )
 
 	if ( !fXml.Open( strPath, CFile::modeReadWrite | CFile::typeBinary ) )
 	{
-		TRACE( L"@ CWorkerThread::OnAddTempPatientToXml -> Failed fXml.Open\n" );
+		TRACE( L"@ CWorkerThread::OnAddTempPatientToXml -> Failed fXml.Open [%ld]\n", GetLastError() );
 		delete p;
+		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
 
 		return;
 	}
@@ -368,35 +370,201 @@ void CWorkerThread::OnAddTempPatientToXml( WPARAM wParam, LPARAM lParam )
 		XML_PERSON_ADDRESS_DISTRICT_CODE, XML_DISTRICT_CODE,
 		XML_PERSON,
 		XML_PERSONS );
+	TRACE( "@ CWorkerThread::OnAddTempPatientToXml -> Write \n%S\n", strXml );
 
 	// Convert to UTF8
 	int  nUTF8    = strXml.GetLength()*2;
 	char *pszUTF8 = new char[ nUTF8 ];
 	theApp.m_pProgramData->ToUTF8( strXml.GetBuffer(), strXml.GetLength(), pszUTF8, &nUTF8 );
 
-	TRACE( "@ CWorkerThread::OnAddTempPatientToXml -> Write \n%S\n", strXml );
+	char *pszPersTag = new char[ MAX_PATH ];
+	int  nPersTag    = wcslen( XML_PERSONS ) + 3;
 
-	// Where to write
-	LONGLONG lOffset = 0;
-	char	 c;
+	sprintf_s( pszPersTag, MAX_PATH, "</%S>", XML_PERSONS );
+	
+	if ( !theApp.m_pProgramData->PositionInFile( &fXml, pszPersTag, nPersTag, CFile::end, TRUE ) )
+	{
+		TRACE( L"@ CWorkerThread::OnAddTempPatientToXml -> Failed PositionInFile\n" );
+		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
+
+		delete [] pszPersTag;
+		delete [] pszUTF8;
+		fXml.Close();
+
+		return;
+	}
+		
+	fXml.Write( pszUTF8, nUTF8 );
+
+	// Add temp patient to list
+	theApp.m_pProgramData->AddPatientTemp( strCnp, strLastName, strFirstName, strCityCode );
+
+	// Cleanup
+	delete [] pszPersTag;
+	delete [] pszUTF8;
+	fXml.Close();
+
+	theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_ADDED ) );
+}
+
+void CWorkerThread::OnImportPatientsXml( WPARAM wParam, LPARAM lParam )
+{
+	CString *pstrSrc = (CString*)wParam;
+	CString *pstrDst = (CString*)lParam;
+
+	if ( ::CopyFile( *pstrSrc, *pstrDst, FALSE ) )
+	{
+		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_IMPORTED ) );
+		OnInitMedic();
+	}
+	else
+	{
+		TRACE( L"@ CWorkerThread::OnImportPatientsXml -> Failed CopyFile [%ld]\n", GetLastError() );
+		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_NOT_IMPORTED ) );
+	}
+
+	delete pstrSrc;
+	delete pstrDst;
+}
+
+void CWorkerThread::OnExportTempPatients( WPARAM wParam, LPARAM lParam )
+{
+	CString strTemp = theApp.m_pProgramData->GetCurrentDir() + L"\\" + TEMP_DIR + L"\\" +
+		theApp.m_pProgramData->GetCurrentMedic().strLastName + L"-" + 
+		theApp.m_pProgramData->GetCurrentMedic().strFirstName + L"-" + 
+		theApp.m_pProgramData->GetCurrentMedic().strID + L"-" + 
+		TEMP_DIR + L".xml";
+
+	if ( !::PathFileExists( strTemp )  )
+	{
+		TRACE( L"@ CWorkerThread::OnExportTempPatients -> Temp patient list not found\n" );
+		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_NOT_EXPORTED ) );
+
+		return;
+	}
+
+	// Get current time
+	SYSTEMTIME st;
+	::ZeroMemory( &st, sizeof( st ) );
+	::GetLocalTime( &st );
+	CString strTimestamp;
+	strTimestamp.Format( L"%d-%02d-%02d-%02d-%02d-%02d", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond );
+
+	CString strExport = theApp.m_pProgramData->GetCurrentDir() + L"\\" + EXPORTS_DIR + L"\\" +
+		theApp.m_pProgramData->GetCurrentMedic().strLastName + L"-" + 
+		theApp.m_pProgramData->GetCurrentMedic().strFirstName + L"-" + 
+		theApp.m_pProgramData->GetCurrentMedic().strID + L"-" + 
+		strTimestamp + L"-" +
+		EXPORTED_XML + L".xml";
+
+	if ( !::CopyFile( strTemp, strExport, FALSE ) )
+	{
+		TRACE( L" Failed CopyFile [%ld]\n", GetLastError() );
+		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_NOT_EXPORTED ) );
+
+		return;
+	}
+
+	if ( !::DeleteFile( strTemp ) )
+		TRACE( L"@ CWorkerThread::OnExportTempPatients -> Failed DeleteFile [%ld]\n", GetLastError() );
+
+	// Merge exported and current patients
+	CFile fExportXml, fXml;
+
+	if ( !fExportXml.Open( strExport, CFile::modeRead | CFile::typeBinary ) )
+	{
+		TRACE( L"@ CWorkerThread::OnExportTempPatients -> Failed fExportXml.Open [%ld]\n", GetLastError() );
+		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_NOT_EXPORTED ) );
+
+		return;
+	}
+
+	CString strXml = theApp.m_pProgramData->GetCurrentDir() + L"\\" + PATIENTS_DIR + L"\\" +
+		theApp.m_pProgramData->GetCurrentMedic().strLastName + L"-" + 
+		theApp.m_pProgramData->GetCurrentMedic().strFirstName + L"-" + 
+		theApp.m_pProgramData->GetCurrentMedic().strID + L".xml";
+
+	if ( !::PathFileExists( strXml )  )
+	{
+		if ( !CreateGeneticPatientsXml() )
+		{
+			TRACE( L"@ CWorkerThread::OnExportTempPatients -> Failed CreateGeneticPatientsXml\n" );
+			theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_NOT_EXPORTED ) );
+
+			return;
+		}
+	}
+
+	if ( !fXml.Open( strXml, CFile::modeReadWrite | CFile::typeBinary ) )
+	{
+		TRACE( L"@ CWorkerThread::OnExportTempPatients -> Failed fXml.Open [%ld]\n", GetLastError() );
+		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_NOT_EXPORTED ) );
+
+		return;
+	}
+
+	// Position in export xml
+	char *pszPersonTag = new char[ MAX_PATH ];
+	int  nPersonTag    = wcslen( XML_PERSON ) + 1;
+
+	sprintf_s( pszPersonTag, MAX_PATH, "<%S", XML_PERSON );
+	
+	if ( !theApp.m_pProgramData->PositionInFile( &fExportXml, pszPersonTag, nPersonTag, CFile::begin ) || 
+		!theApp.m_pProgramData->PositionInFile( &fExportXml, pszPersonTag, nPersonTag, CFile::current, FALSE, nPersonTag ) )
+	{
+		TRACE( L"@ CWorkerThread::OnExportTempPatients -> Failed PositionInFile fExportXml\n" );
+		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_NOT_EXPORTED ) );
+
+		delete [] pszPersonTag;
+		fExportXml.Close();
+		fXml.Close();
+		return;
+	}
+
+	delete [] pszPersonTag;
+
+	// Position in main xml
+	char *pszPersTag = new char[ MAX_PATH ];
+	int  nPersTag    = wcslen( XML_PERSONS ) + 3;
+
+	sprintf_s( pszPersTag, MAX_PATH, "</%S>", XML_PERSONS );
+	
+	if ( !theApp.m_pProgramData->PositionInFile( &fXml, pszPersTag, nPersTag, CFile::end, TRUE ) )
+	{
+		TRACE( L"@ CWorkerThread::OnExportTempPatients -> Failed PositionInFile fXml\n" );
+		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_NOT_EXPORTED ) );
+
+		delete [] pszPersTag;
+		fExportXml.Close();
+		fXml.Close();
+		return;
+	}
+
+	delete [] pszPersTag;
+
+	// Read from export xml and write in main xml
+	static int nBufferSize = 4096;
+
+	char *pBuffer = new char[ nBufferSize ];
+	int  nRead    = 0;
 
 	do
 	{
-		lOffset -= 1;
-		fXml.Seek( lOffset, CFile::end );
-		fXml.Read( &c, 1 );
+		nRead = fExportXml.Read( pBuffer, nBufferSize );
+		
+		if ( nRead > 0 )
+			fXml.Write( pBuffer, nRead );
 	}
-	while ( c != '>' );
-
-	// Write
-	lOffset++;
-	lOffset -= (wcslen( XML_PERSONS ) + 3); // </> = 3
-	fXml.Seek( lOffset, CFile::end );
-	fXml.Write( pszUTF8, nUTF8 );
+	while ( nRead > 0 );
 
 	// Cleanup
-	delete [] pszUTF8;
+	delete [] pBuffer;
+	fExportXml.Close();
 	fXml.Close();
+
+	theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_EXPORTED ) );
+
+	OnInitMedic();
 }
 
 //////////////////////////////////////////////////// Methods //////////////////////////////////////////////////////////
@@ -410,10 +578,9 @@ int CWorkerThread::SQLiteCallback( void *NotUsed, int argc, char **argv, char **
 
 		if ( nCount )
 		{
-			wchar_t *pszCnp = new wchar_t[ strCnp.GetLength() + 1 ];
-			wcscpy_s( pszCnp, strCnp.GetLength() + 1, strCnp.GetBuffer() );
+			CString *pstrCnp = new CString( strCnp );
 
-			this->PostThreadMessage( WM_DIG_FOR_CNP, (WPARAM)pszCnp, (LPARAM)FALSE );
+			this->PostThreadMessage( WM_DIG_FOR_CNP, (WPARAM)pstrCnp, (LPARAM)FALSE );
 		}
 		else
 		{
@@ -423,27 +590,20 @@ int CWorkerThread::SQLiteCallback( void *NotUsed, int argc, char **argv, char **
 	}
 	else // Create patient
 	{
-		CString strCnp( argv[ 0 ] );
-		CString strLastName( argv[ 1 ] );
-		CString strFirstName( argv[ 2 ] );
 		CString strCity( argv[ 3 ] );
-
-		TRACE( L"@ CWorkerThread::SQLiteCallback -> Add %s, %s, %s, %s, %s\n", 
-			strCnp, strLastName, strFirstName, strCity, theApp.m_pProgramData->GetCity( strCity ).strID );
-
-		// Add temp patient to list
-		theApp.m_pProgramData->AddPatientTemp( strCnp, strLastName, strFirstName, theApp.m_pProgramData->GetCity( strCity ).strID );
 
 		// Add temp patient to xml
 		PATIENT *p = new PATIENT;
-		p->strID		= strCnp;
-		p->strLastName  = strLastName;
-		p->strFirstName = strFirstName;
+		p->strID		= argv[ 0 ];
+		p->strLastName  = argv[ 1 ];
+		p->strFirstName = argv[ 2 ];
 		p->strCityCode  = theApp.m_pProgramData->GetCity( strCity ).strID;
+
+		TRACE( L"@ CWorkerThread::SQLiteCallback -> Add %s, %s, %s, %s, %s\n", 
+			p->strID, p->strLastName, p->strFirstName, strCity, p->strCityCode );
 
 		OnAddTempPatientToXml( (WPARAM)p, 0 );
 
-		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_ADDED ) );
 		theApp.m_pFrmMain->ResetTxtCnp();
 	}
 
@@ -510,6 +670,34 @@ BOOL CWorkerThread::CreateGeneticTempPatientsXml()
 			theApp.m_pProgramData->GetCurrentMedic().strFirstName + L"-" +
 			theApp.m_pProgramData->GetCurrentMedic().strID + L"-" + 
 			TEMP_DIR + L".xml", 
+		CFile::modeCreate | CFile::modeWrite | CFile::typeBinary ) )
+	{
+		return FALSE;
+	}
+
+	CString strXml;
+	strXml.Format( L"%s\n<%s %s>\n</%s>", XML_HEADER, XML_PERSONS, XML_PERSONS_XMLNS, XML_PERSONS );
+
+	int  nUTF8    = strXml.GetLength()*2;
+	char *pszUTF8 = new char[ nUTF8 ];
+	theApp.m_pProgramData->ToUTF8( strXml.GetBuffer(), strXml.GetLength(), pszUTF8, &nUTF8 );
+	fXml.Write( pszUTF8, nUTF8 );
+	delete [] pszUTF8;
+
+	fXml.Close();
+
+	return TRUE;
+}
+
+BOOL CWorkerThread::CreateGeneticPatientsXml()
+{
+	CFile fXml;
+
+	if ( !fXml.Open( 
+		theApp.m_pProgramData->GetCurrentDir() + L"\\" + PATIENTS_DIR + L"\\" +
+			theApp.m_pProgramData->GetCurrentMedic().strLastName + L"-" + 
+			theApp.m_pProgramData->GetCurrentMedic().strFirstName + L"-" + 
+			theApp.m_pProgramData->GetCurrentMedic().strID + L".xml", 
 		CFile::modeCreate | CFile::modeWrite | CFile::typeBinary ) )
 	{
 		return FALSE;

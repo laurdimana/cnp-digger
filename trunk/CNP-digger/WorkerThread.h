@@ -17,6 +17,7 @@ public:
 	BOOL CreateGenericCitiesXml();
 	BOOL CreateGenericMedicsXml();
 	BOOL CreateGeneticTempPatientsXml();
+	BOOL CreateGeneticPatientsXml();
 
 	int SQLiteCallback( void *NotUsed, int argc, char **argv, char **coln );
 
@@ -29,6 +30,8 @@ protected:
 	afx_msg void OnParsePatientsXML( WPARAM wParam, LPARAM lParam = FALSE );
 	afx_msg void OnDigForCnp( WPARAM wParam, LPARAM lParam );
 	afx_msg void OnAddTempPatientToXml( WPARAM wParam, LPARAM lParam );
+	afx_msg void OnImportPatientsXml( WPARAM wParam, LPARAM lParam );
+	afx_msg void OnExportTempPatients( WPARAM wParam, LPARAM lParam );
 
 	DECLARE_MESSAGE_MAP()
 };
