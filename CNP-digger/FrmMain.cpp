@@ -206,49 +206,63 @@ void CFrmMain::OnFileMedics()
 
 void CFrmMain::OnFileImport()
 {
+	CFileDialog dlgOpenXml( TRUE, L"*.xml", NULL, 0, L"XML Files (*.xml)|*.xml|All Files (*.*)|*.*||" );
+
+	if ( dlgOpenXml.DoModal() == IDOK )
+	{
+		CString *pstrDst = new CString( theApp.m_pProgramData->GetCurrentDir() + L"\\" + PATIENTS_DIR + L"\\" +
+			theApp.m_pProgramData->GetCurrentMedic().strLastName + L"-" + 
+			theApp.m_pProgramData->GetCurrentMedic().strFirstName + L"-" + 
+			theApp.m_pProgramData->GetCurrentMedic().strID + L".xml" );
+		CString *pstrSrc = new CString( dlgOpenXml.GetPathName() );
+
+		theApp.m_pWorkerThread->PostThreadMessage( WM_IMPORT_PATIENTS_XML, (WPARAM)pstrSrc, (LPARAM)pstrDst );
+	}
 }
 
 void CFrmMain::OnFileExport()
 {
+	if ( theApp.m_pProgramData->GetTempPatients() > 0 )
+		theApp.m_pWorkerThread->PostThreadMessage( WM_EXPORT_TEMP_PATIENTS, 0, 0 );
+	else
+		SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_NOT_EXPORTED ) );
 }
 
 void CFrmMain::OnTxtCnpChange()
 {
-	wchar_t *pszCnp = new wchar_t[ m_txtCNP.GetWindowTextLength() + 1 ];
+	CString *pstrCnp = new CString();
 
-	m_txtCNP.GetWindowText( pszCnp, m_txtCNP.GetWindowTextLength() + 1 );
+	m_txtCNP.GetWindowText( *pstrCnp );
 
-	if ( theApp.m_pProgramData->IsCnpValid( pszCnp ) )
+	if ( theApp.m_pProgramData->IsCnpValid( pstrCnp->GetBuffer() ) )
 		m_txtCNP.SetSel( 0, -1 );
 
-	this->PostMessage( WM_UPDATE_PATIENTS_TABLE, (WPARAM)pszCnp );
+	this->PostMessage( WM_UPDATE_PATIENTS_TABLE, (WPARAM)pstrCnp );
 }
 
 void CFrmMain::OnBtnGo()
 {
-	wchar_t *pszCnp = new wchar_t[ m_txtCNP.GetWindowTextLength() + 1 ];
+	CString *pstrCnp = new CString();
 
-	m_txtCNP.GetWindowText( pszCnp, m_txtCNP.GetWindowTextLength() + 1 );
+	m_txtCNP.GetWindowText( *pstrCnp );
 
-	if ( !theApp.m_pProgramData->IsCnpValid( pszCnp ) ||
+	if ( !theApp.m_pProgramData->IsCnpValid( pstrCnp->GetBuffer() ) ||
 		theApp.m_pProgramData->GetDisplayedPatients() > 0 )
 	{
 		ResetTxtCnp();
 		SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
-		delete [] pszCnp;
+		delete pstrCnp;
 
 		return;
 	}
 
-	theApp.m_pWorkerThread->PostThreadMessage( WM_DIG_FOR_CNP, (WPARAM)pszCnp, (LPARAM)TRUE );
+	theApp.m_pWorkerThread->PostThreadMessage( WM_DIG_FOR_CNP, (WPARAM)pstrCnp, (LPARAM)TRUE );
 }
 
 LRESULT CFrmMain::OnUpdatePatientsTable( WPARAM wParam, LPARAM lParam )
 {
-	CString strSuffix = wParam ? (wchar_t*)wParam : L"";
-	int		index     = 0;
-
-	delete [] (wchar_t*)wParam;
+	CString *pstrSuffix = wParam ? (CString*)wParam : new CString( L"" );
+	int		index       = 0;
 
 	m_tblPatients.DeleteAllItems();
 
@@ -260,7 +274,7 @@ LRESULT CFrmMain::OnUpdatePatientsTable( WPARAM wParam, LPARAM lParam )
 	{
 		PATIENT p = list->GetNext( pos );
 
-		if ( strSuffix.IsEmpty() || p.strID.Left( strSuffix.GetLength() ) == strSuffix )
+		if ( pstrSuffix->IsEmpty() || p.strID.Left( pstrSuffix->GetLength() ) == *pstrSuffix )
 			AddPatientToTable( index++, p.strID, p.strLastName, p.strFirstName, TRUE );
 	}
 
@@ -272,16 +286,18 @@ LRESULT CFrmMain::OnUpdatePatientsTable( WPARAM wParam, LPARAM lParam )
 	{
 		PATIENT p = list->GetNext( pos );
 
-		if ( strSuffix.IsEmpty() || p.strID.Left( strSuffix.GetLength() ) == strSuffix )
+		if ( pstrSuffix->IsEmpty() || p.strID.Left( pstrSuffix->GetLength() ) == *pstrSuffix )
 			AddPatientToTable( index++, p.strID, p.strLastName, p.strFirstName );
 	}
 
 	// Update current number of patients
 	theApp.m_pProgramData->SetDislayedPatients( index );
-	strSuffix.Format( L"%d", index );
-	m_lblPatients.SetWindowText( strSuffix );
+	pstrSuffix->Format( L"%d", index );
+	m_lblPatients.SetWindowText( *pstrSuffix );
 
 	m_txtCNP.SetFocus();
+
+	delete pstrSuffix;
 
 	return (LRESULT)0;
 }

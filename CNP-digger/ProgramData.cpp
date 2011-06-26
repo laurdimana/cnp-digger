@@ -117,6 +117,57 @@ BOOL CProgramData::IsCnpValid( wchar_t *pszCnp )
 	return _wtoi( strC ) == R;
 }
 
+BOOL CProgramData::PositionInFile( CFile *f, char *pUTF8, int nUTF8, int nPos, BOOL bBackwards, LONGLONG lStartOffset )
+{
+	f->Seek( lStartOffset, nPos );
+
+	int nFound = 0;
+	ULONGLONG lFailsafe = f->GetLength();
+
+	if ( bBackwards )
+		f->Seek( -1, CFile::current );
+
+	do
+	{
+		char c;
+
+		if ( f->Read( &c, 1 ) == 0 )
+			return FALSE;
+
+		if ( c == pUTF8[ bBackwards ? nUTF8 - nFound - 1 : nFound ] )
+		{
+			nFound++;
+
+			if ( nFound == nUTF8 )
+			{
+				f->Seek( bBackwards ? -1 : -nUTF8, CFile::current );
+
+				return TRUE;
+			}
+		}
+		else if ( nFound )
+			nFound = 0;
+
+		if ( bBackwards )
+		{
+			TRY
+			{
+				f->Seek( -2, CFile::current );
+			}
+			CATCH ( CFileException, e )
+			{
+				return FALSE;
+			}
+			END_CATCH
+		}
+
+		lFailsafe--;
+	}
+	while ( lFailsafe > 0 );
+
+	return FALSE;
+}
+
 void CProgramData::AddMedic( CString strID, CString strLastName, CString strFirstName )
 {
 	MEDIC medic;
