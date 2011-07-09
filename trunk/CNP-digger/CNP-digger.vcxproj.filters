@@ -65,6 +65,12 @@
     <ClInclude Include="PatientsSAXContentHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DlgCreatePatient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DlgCreateMedic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CNP-digger.cpp">
@@ -95,6 +101,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PatientsSAXContentHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgCreatePatient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgCreateMedic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

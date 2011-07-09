@@ -48,6 +48,9 @@
 #define WM_ADD_TEMP_PATIENT_TO_XML		WM_USER + 8
 #define WM_IMPORT_PATIENTS_XML			WM_USER + 9
 #define WM_EXPORT_TEMP_PATIENTS			WM_USER + 10
+#define WM_ADD_MEDIC_TO_XML				WM_USER + 11
+#define WM_DELETE_MEDIC_FROM_XML		WM_USER + 12
+#define WM_REWRITE_MEDICS_XML			WM_USER + 13
 
 
 // Needed files and folders
@@ -101,6 +104,7 @@
 #define DB_FIRST_NAME			L"prenume"
 #define DB_CITY					L"localitate"
 #define EXPORTED_XML			L"exported"
+#define MAX_XML_LINE			4096
 
 // Structs
 struct MEDIC

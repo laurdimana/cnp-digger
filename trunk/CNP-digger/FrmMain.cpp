@@ -183,13 +183,14 @@ int CFrmMain::OnCreate(LPCREATESTRUCT lpCreateStruct)
 }
 
 void CFrmMain::OnFileMedics()
-{	
+{
 	CDlgMedics dlgMedics;
-	CString    strCurMedicId = theApp.m_pProgramData->GetCurrentMedic().strID;
+	CString    strCurMedicId = theApp.m_pProgramData->GetCurrentMedicID();
 
 	dlgMedics.DoModal();
 
-	if ( theApp.m_pProgramData->GetCurrentMedic().strID.GetLength() > 0 )
+	if ( theApp.m_pProgramData->GetCurrentMedicID().GetLength() > 0 &&
+		theApp.m_pProgramData->GetMedicsMap()->PLookup( theApp.m_pProgramData->GetCurrentMedicID() ) != NULL )
 	{
 		if ( theApp.m_pProgramData->GetCurrentMedic().strID != strCurMedicId )
 		{
