@@ -9,7 +9,7 @@ CProgramData::CProgramData()
 {
 	m_MedicsMap.InitHashTable( INIT_MEDICS_HASH_TABLE );
 	m_CitiesMap.InitHashTable( INIT_CITIES_HASH_TABLE );
-	m_CurrentMedic.strID = L"";
+	m_strCurrentMedicID = L"";
 	m_nDisplayedPatients = 0;
 
 	// Init current dir
@@ -180,6 +180,11 @@ void CProgramData::AddMedic( CString strID, CString strLastName, CString strFirs
 	TRACE( L"@ CProgramData::AddMedic -> Load medic %s %s\n", m_MedicsMap[ strID ].strLastName, m_MedicsMap[ strID ].strFirstName );
 }
 
+BOOL CProgramData::DeleteMedic( CString strID )
+{
+	return m_MedicsMap.RemoveKey( strID );
+}
+
 void CProgramData::AddCity( CString strID, CString strName, CString strDistrict )
 {
 	CITY city;
@@ -187,9 +192,9 @@ void CProgramData::AddCity( CString strID, CString strName, CString strDistrict 
 	city.strName	 = strName;
 	city.strDistrict = strDistrict;
 
-	m_CitiesMap[ strName ] = city;
+	m_CitiesMap[ strName.MakeLower() ] = city;
 
-	TRACE( L"@ CProgramData::AddCity -> Load city %s, %s, %s\n", m_CitiesMap[ strName ].strName, m_CitiesMap[ strName ].strID, m_CitiesMap[ strName ].strDistrict );
+	TRACE( L"@ CProgramData::AddCity -> Load city %s, %s, %s\n", m_CitiesMap[ strName.MakeLower() ].strName, m_CitiesMap[ strName.MakeLower() ].strID, m_CitiesMap[ strName.MakeLower() ].strDistrict );
 }
 
 void CProgramData::AddPatient( CString strID, CString strLastName, CString strFirstName, CString strCityCode )
@@ -226,9 +231,9 @@ void CProgramData::AddPatientTemp( CString strID, CString strLastName, CString s
 		m_PatientsListTemp.GetTail().strCityCode );
 }
 
-void CProgramData::SetCurrentMedic( MEDIC medic )
+void CProgramData::SetCurrentMedicID( CString strMedicID )
 {
-	m_CurrentMedic = medic;
+	m_strCurrentMedicID = strMedicID;
 }
 
 void CProgramData::SetDislayedPatients( int nPatients )
@@ -266,14 +271,19 @@ MEDIC CProgramData::GetMedic( CString strID )
 	return m_MedicsMap[ strID ];
 }
 
+CString CProgramData::GetCurrentMedicID()
+{
+	return m_strCurrentMedicID;
+}
+
 MEDIC CProgramData::GetCurrentMedic()
 {
-	return m_CurrentMedic;
+	return GetMedic( GetCurrentMedicID() );
 }
 
 CITY CProgramData::GetCity( CString strName )
 {
-	return m_CitiesMap[ strName ];
+	return m_CitiesMap[ strName.MakeLower() ];
 }
 
 PATIENT CProgramData::GetPatient( int nIndex )

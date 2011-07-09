@@ -13,10 +13,11 @@ public:
 public:
 // Setters
 	void AddMedic( CString strID, CString strLastName, CString strFirstName );
+	BOOL DeleteMedic( CString strID );
 	void AddCity( CString strID, CString strName, CString strDistrict );
 	void AddPatient( CString strID, CString strLastName, CString strFirstName, CString strCityCode );
 	void AddPatientTemp( CString strID, CString strLastName, CString strFirstName, CString strCityCode );
-	void SetCurrentMedic( MEDIC medic );
+	void SetCurrentMedicID( CString strMedicID );
 	void SetDislayedPatients( int nPatients );
 
 // Getters
@@ -36,7 +37,8 @@ public:
 	int GetDisplayedPatients();
 
 	MEDIC   GetMedic( CString strID );
-	MEDIC	GetCurrentMedic();
+	CString	GetCurrentMedicID();
+	MEDIC   GetCurrentMedic();
 	CITY    GetCity( CString strName );
 	PATIENT GetPatient( int nIndex );
 	PATIENT GetPatientTemp( int nIndex );
@@ -69,8 +71,8 @@ protected:
 	CListPatients	  m_PatientsList,
 					  m_PatientsListTemp;
 
-	MEDIC m_CurrentMedic;
-	int   m_nDisplayedPatients;
+	CString m_strCurrentMedicID;
+	int		m_nDisplayedPatients;
 
 	CSQLiteWrapper m_db;
 };

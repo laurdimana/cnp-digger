@@ -5,6 +5,7 @@
 #include "CitiesSAXContentHandler.h"
 #include "PatientsSAXContentHandler.h"
 #include "SAXErrorHandler.h"
+#include "DlgCreatePatient.h"
 
 BEGIN_MESSAGE_MAP( CWorkerThread, CWinThread )
 	ON_THREAD_MESSAGE( WM_CHECK_FOR_ESSENTIAL_FILES,	OnCheckForEssentialFiles )
@@ -16,6 +17,9 @@ BEGIN_MESSAGE_MAP( CWorkerThread, CWinThread )
 	ON_THREAD_MESSAGE( WM_ADD_TEMP_PATIENT_TO_XML,		OnAddTempPatientToXml )
 	ON_THREAD_MESSAGE( WM_IMPORT_PATIENTS_XML,			OnImportPatientsXml )
 	ON_THREAD_MESSAGE( WM_EXPORT_TEMP_PATIENTS,			OnExportTempPatients )
+	ON_THREAD_MESSAGE( WM_ADD_MEDIC_TO_XML,				OnAddMedicToXml )
+	ON_THREAD_MESSAGE( WM_DELETE_MEDIC_FROM_XML,		OnDeleteMedicFromXml )
+	ON_THREAD_MESSAGE( WM_REWRITE_MEDICS_XML,			OnRewriteMedicsXml )
 END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////// Static ///////////////////////////////////////////////////////////
@@ -567,6 +571,161 @@ void CWorkerThread::OnExportTempPatients( WPARAM wParam, LPARAM lParam )
 	OnInitMedic();
 }
 
+void CWorkerThread::OnAddMedicToXml( WPARAM wParam, LPARAM lParam )
+{
+	MEDIC *medic = (MEDIC*)wParam;
+
+	// Check for medics xml
+	CString strPath = theApp.m_pProgramData->GetCurrentDir() + L"\\" + 
+		theApp.m_pProgramData->GetMedicsXML();
+
+	if ( !::PathFileExists( strPath )  )
+	{
+		if ( !CreateGenericMedicsXml() )
+		{
+			TRACE( L"@ CWorkerThread::OnAddMedicToXml -> Failed CreateGenericMedicsXml\n" );
+			delete medic;
+
+			return;
+		}
+	}
+
+	// Add medic to xml
+	CFile fXml;
+
+	if ( !fXml.Open( strPath, CFile::modeReadWrite | CFile::typeBinary ) )
+	{
+		TRACE( L"@ CWorkerThread::OnAddMedicToXml -> Failed fXml.Open [%ld]\n", GetLastError() );
+		delete medic;
+
+		return;
+	}
+
+	// What to write
+	CString strXml;
+	strXml.Format( L"\t<%s %s=\"%s\" %s=\"%s\" %s=\"%s\" />\n</%s>",
+		XML_MEDIC, 
+		XML_MEDIC_LAST_NAME, medic->strLastName, 
+		XML_MEDIC_FIRST_NAME, medic->strFirstName,
+		XML_MEDIC_ID, medic->strID,
+		XML_MEDICS );
+	TRACE( "@ CWorkerThread::OnAddMedicToXml -> Write \n%S\n", strXml );
+
+	// Convert to UTF8
+	int  nUTF8    = strXml.GetLength()*2;
+	char *pszUTF8 = new char[ nUTF8 ];
+	theApp.m_pProgramData->ToUTF8( strXml.GetBuffer(), strXml.GetLength(), pszUTF8, &nUTF8 );
+
+	char *pszMedicsTag = new char[ MAX_PATH ];
+	int  nMedicsTag    = wcslen( XML_MEDICS ) + 3;
+
+	sprintf_s( pszMedicsTag, MAX_PATH, "</%S>", XML_MEDICS );
+	
+	if ( !theApp.m_pProgramData->PositionInFile( &fXml, pszMedicsTag, nMedicsTag, CFile::end, TRUE ) )
+	{
+		TRACE( L"@ CWorkerThread::OnAddMedicToXml -> Failed PositionInFile\n" );
+
+		delete [] pszMedicsTag;
+		delete [] pszUTF8;
+		delete medic;
+		fXml.Close();
+
+		return;
+	}
+		
+	fXml.Write( pszUTF8, nUTF8 );
+
+	// Cleanup
+	delete [] pszMedicsTag;
+	delete [] pszUTF8;
+	delete medic;
+	fXml.Close();
+}
+
+void CWorkerThread::OnDeleteMedicFromXml( WPARAM wParam, LPARAM lParam )
+{
+	MEDIC *medic = (MEDIC*)wParam;
+
+	if ( medic == NULL )
+		return;
+
+	// Delete temp patients xml
+	CString strPath = theApp.m_pProgramData->GetCurrentDir() + L"\\" + TEMP_DIR + L"\\" +
+		medic->strLastName + L"-" + 
+		medic->strFirstName + L"-" + 
+		medic->strID + L"-" + 
+		TEMP_DIR + L".xml";
+	::DeleteFile( strPath );
+
+	// Delete patients xml
+	strPath = theApp.m_pProgramData->GetCurrentDir() + L"\\" + PATIENTS_DIR + L"\\" +
+		medic->strLastName + L"-" + 
+		medic->strFirstName + L"-" + 
+		medic->strID + L".xml";
+	::DeleteFile( strPath );
+
+	// Delete from xml
+	OnRewriteMedicsXml();
+
+	delete medic;
+}
+
+void CWorkerThread::OnRewriteMedicsXml( WPARAM wParam, LPARAM lParam )
+{
+	if ( theApp.m_pProgramData->GetMedicsMap()->GetCount() == 0 )
+		return;
+
+	// Get xml path
+	CString strPath = theApp.m_pProgramData->GetCurrentDir() + L"\\" + 
+		theApp.m_pProgramData->GetMedicsXML();
+
+	// Open xml
+	CFile fXml;
+
+	if ( !fXml.Open( strPath, CFile::modeCreate | CFile::modeWrite | CFile::typeBinary ) )
+	{
+		TRACE( L"@ CWorkerThread::OnRewriteMedicsXml -> Failed fXml.Open [%ld]\n", GetLastError() );
+
+		return;
+	}
+
+	// Write header
+	CString strXml;
+	strXml.Format( L"%s\n<%s>\n", XML_HEADER, XML_MEDICS );
+
+	int  nUTF8    = MAX_XML_LINE;
+	char *pszUTF8 = new char[ MAX_XML_LINE ];
+	theApp.m_pProgramData->ToUTF8( strXml.GetBuffer(), strXml.GetLength(), pszUTF8, &nUTF8 );
+	fXml.Write( pszUTF8, nUTF8 );
+
+	// Write the medics
+	CMapStringToMedic::CPair *pCurVal = theApp.m_pProgramData->GetMedicsMap()->PGetFirstAssoc();
+
+	while ( pCurVal != NULL )
+	{
+		strXml.Format( L"\t<%s %s=\"%s\" %s=\"%s\" %s=\"%s\" />\n",
+			XML_MEDIC,
+			XML_MEDIC_LAST_NAME, pCurVal->value.strLastName,
+			XML_MEDIC_FIRST_NAME, pCurVal->value.strFirstName,
+			XML_MEDIC_ID, pCurVal->value.strID );
+		nUTF8 = MAX_XML_LINE;
+		theApp.m_pProgramData->ToUTF8( strXml.GetBuffer(), strXml.GetLength(), pszUTF8, &nUTF8 );
+		fXml.Write( pszUTF8, nUTF8 );
+
+		pCurVal = theApp.m_pProgramData->GetMedicsMap()->PGetNextAssoc( pCurVal );
+	}
+
+	// End
+	strXml.Format( L"</%s>", XML_MEDICS );
+	nUTF8 = MAX_XML_LINE;
+	theApp.m_pProgramData->ToUTF8( strXml.GetBuffer(), strXml.GetLength(), pszUTF8, &nUTF8 );
+	fXml.Write( pszUTF8, nUTF8 );
+
+	// Cleanup
+	delete [] pszUTF8;
+	fXml.Close();
+}
+
 //////////////////////////////////////////////////// Methods //////////////////////////////////////////////////////////
 
 int CWorkerThread::SQLiteCallback( void *NotUsed, int argc, char **argv, char **coln )
@@ -576,16 +735,37 @@ int CWorkerThread::SQLiteCallback( void *NotUsed, int argc, char **argv, char **
 		int		nCount = atoi( argv[ 0 ] );
 		CString strCnp( argv[ 1 ] );
 
-		if ( nCount )
+		if ( nCount ) // Patient found
 		{
 			CString *pstrCnp = new CString( strCnp );
 
 			this->PostThreadMessage( WM_DIG_FOR_CNP, (WPARAM)pstrCnp, (LPARAM)FALSE );
 		}
-		else
+		else // Patient not found .. create?
 		{
-			theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
-			theApp.m_pFrmMain->ResetTxtCnp();
+			CDlgCreatePatient dlgCreatePatient( strCnp );
+			
+			if ( dlgCreatePatient.DoModal() == IDOK )
+			{
+				TRACE( L"@ CWorkerThread::SQLiteCallback -> Create patient %s %s %s %s\n", 
+					dlgCreatePatient.GetCNP(), dlgCreatePatient.GetLastName(), dlgCreatePatient.GetFirstName(), dlgCreatePatient.GetCity() );
+
+				// Add temp patient to xml
+				PATIENT *p = new PATIENT;
+				p->strID		= dlgCreatePatient.GetCNP();
+				p->strLastName  = dlgCreatePatient.GetLastName();
+				p->strFirstName = dlgCreatePatient.GetFirstName();
+				p->strCityCode  = theApp.m_pProgramData->GetCity( dlgCreatePatient.GetCity() ).strID;
+
+				OnAddTempPatientToXml( (WPARAM)p, 0 );
+
+				theApp.m_pFrmMain->ResetTxtCnp();
+			}
+			else
+			{
+				theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
+				theApp.m_pFrmMain->ResetTxtCnp();
+			}
 		}
 	}
 	else // Create patient

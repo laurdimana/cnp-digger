@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "DlgMedics.h"
 #include "CNP-digger.h"
+#include "DlgCreateMedic.h"
 
 BEGIN_MESSAGE_MAP( CDlgMedics, CDialogEx )
 	ON_BN_CLICKED( IDOK,		   OnBtnSelect )
@@ -36,6 +37,7 @@ BOOL CDlgMedics::OnInitDialog()
 	CDialogEx::OnInitDialog();
 
 	CMapStringToMedic::CPair *pCurVal = theApp.m_pProgramData->GetMedicsMap()->PGetFirstAssoc();
+	m_cmbMedic.ResetContent();
 
 	while ( pCurVal != NULL )
 	{
@@ -65,7 +67,7 @@ void CDlgMedics::OnBtnSelect()
 		m_cmbMedic.GetWindowText( strMedic );
 		strMedic = strMedic.Right( strMedic.GetLength() - strMedic.ReverseFind( L' ' ) - 1 );
 
-		theApp.m_pProgramData->SetCurrentMedic( theApp.m_pProgramData->GetMedic( strMedic ) );
+		theApp.m_pProgramData->SetCurrentMedicID( strMedic );
 
 		CDialogEx::OnOK();
 	}
@@ -77,8 +79,59 @@ void CDlgMedics::OnBtnSelect()
 
 void CDlgMedics::OnBtnAdd()
 {
+	CDlgCreateMedic dlgCreateMedic;
+
+	if ( dlgCreateMedic.DoModal() == IDOK )
+	{
+		TRACE( L"@ CDlgMedics::OnBtnAdd -> Create medic %s, %s, %s\n",
+			dlgCreateMedic.GetID(), dlgCreateMedic.GetLastName(), dlgCreateMedic.GetFirstName() );
+
+		theApp.m_pProgramData->AddMedic( dlgCreateMedic.GetID(), dlgCreateMedic.GetLastName(), dlgCreateMedic.GetFirstName() );
+
+		MEDIC *m = new MEDIC;
+		m->strID		= dlgCreateMedic.GetID();
+		m->strLastName  = dlgCreateMedic.GetLastName();
+		m->strFirstName = dlgCreateMedic.GetFirstName();
+
+		theApp.m_pWorkerThread->PostThreadMessage( WM_ADD_MEDIC_TO_XML, (WPARAM)m, 0 );
+
+		OnInitDialog();
+	}
 }
 
 void CDlgMedics::OnBtnDel()
 {
+	if ( m_cmbMedic.GetWindowTextLength() > 0 )
+	{
+		CString strMedic;
+
+		m_cmbMedic.GetWindowText( strMedic );
+		strMedic = strMedic.Right( strMedic.GetLength() - strMedic.ReverseFind( L' ' ) - 1 );
+
+		MEDIC medic = theApp.m_pProgramData->GetMedic( strMedic );
+
+		CString strMsg;
+		strMsg.Format( L"Delete medic %s %s %s ?", 
+			medic.strLastName, medic.strFirstName, medic.strID );
+
+		if ( AfxMessageBox( strMsg, MB_YESNO | MB_ICONQUESTION ) == IDYES )
+		{
+			TRACE( L"@ CDlgMedics::OnBtnDel -> Delete medic %s %s %s\n",
+				medic.strLastName, medic.strFirstName, medic.strID );
+
+			theApp.m_pProgramData->DeleteMedic( medic.strID );
+
+			MEDIC *m = new MEDIC;
+			m->strID = medic.strID;
+			m->strFirstName = medic.strFirstName;
+			m->strLastName = medic.strLastName;
+			theApp.m_pWorkerThread->PostThreadMessage( WM_DELETE_MEDIC_FROM_XML, (WPARAM)m, 0 );
+
+			OnInitDialog();
+		}
+	}
+	else
+	{
+		AfxMessageBox( L"Please select a medic.", MB_ICONERROR );
+	}
 }
