@@ -1,34 +1,34 @@
 #include "stdafx.h"
-#include "DlgCreateMedic.h"
+#include "DlgCreateCity.h"
 
-BEGIN_MESSAGE_MAP( CDlgCreateMedic, CDialogEx )
+BEGIN_MESSAGE_MAP( CDlgCreateCity, CDialogEx )
 	ON_BN_CLICKED( IDOK, OnBtnOK )
 END_MESSAGE_MAP()
 
 ////////////////////////////////////////////// Constructor / Destructor ////////////////////////////////////////////
 
-CDlgCreateMedic::CDlgCreateMedic() : CDialogEx( CDlgCreateMedic::IDD )
+CDlgCreateCity::CDlgCreateCity( CString strName ) : CDialogEx( CDlgCreateCity::IDD )
 {
+	m_strName = strName;
 }
 
-CDlgCreateMedic::~CDlgCreateMedic()
+CDlgCreateCity::~CDlgCreateCity()
 {
 }
 
 ///////////////////////////////////////////////////// Overrides ////////////////////////////////////////////////////////////
 
-void CDlgCreateMedic::DoDataExchange( CDataExchange* pDX )
+void CDlgCreateCity::DoDataExchange( CDataExchange* pDX )
 {
 	CDialogEx::DoDataExchange( pDX );
 
-	DDX_Text( pDX, DLG_CREATE_MEDIC_TXT_ID,		    m_strID );
-	DDX_Text( pDX, DLG_CREATE_MEDIC_TXT_LAST_NAME,  m_strLastName );
-	DDX_Text( pDX, DLG_CREATE_MEDIC_TXT_FIRST_NAME, m_strFirstName );
+	DDX_Text( pDX, DLG_CREATE_CITY_TXT_NAME,  m_strName );
+	DDX_Text( pDX, DLG_CREATE_CITY_TXT_CODE,  m_strCode );
 	DDX_Control( pDX, IDOK,		m_btnOK );
 	DDX_Control( pDX, IDCANCEL,	m_btnCancel );
 }
 
-BOOL CDlgCreateMedic::OnInitDialog()
+BOOL CDlgCreateCity::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
@@ -37,13 +37,12 @@ BOOL CDlgCreateMedic::OnInitDialog()
 
 ///////////////////////////////////////////////////////// Events ///////////////////////////////////////////////////////////////
 
-void CDlgCreateMedic::OnBtnOK()
+void CDlgCreateCity::OnBtnOK()
 {
 	CDialogEx::UpdateData();
 
-	if ( m_strID.Trim().IsEmpty() ||
-		 m_strLastName.Trim().IsEmpty() ||
-		 m_strFirstName.Trim().IsEmpty() )
+	if ( m_strName.Trim().IsEmpty() ||
+		 m_strName.Trim().IsEmpty() )
 	{
 		AfxMessageBox( L"Please fill all the fields!", MB_ICONEXCLAMATION );
 
@@ -55,17 +54,12 @@ void CDlgCreateMedic::OnBtnOK()
 
 ////////////////////////////////////////////////////////// Methods ///////////////////////////////////////////////////////////////
 
-CString CDlgCreateMedic::GetID()
+CString CDlgCreateCity::GetName()
 {
-	return m_strID.Trim();
+	return m_strName.Trim();
 }
 
-CString CDlgCreateMedic::GetLastName()
+CString CDlgCreateCity::GetCode()
 {
-	return m_strLastName.Trim();
-}
-
-CString CDlgCreateMedic::GetFirstName()
-{
-	return m_strFirstName.Trim();
+	return m_strCode.Trim();
 }

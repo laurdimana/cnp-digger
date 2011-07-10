@@ -71,6 +71,9 @@
     <ClInclude Include="DlgCreateMedic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DlgCreateCity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CNP-digger.cpp">
@@ -107,6 +110,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DlgCreateMedic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DlgCreateCity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

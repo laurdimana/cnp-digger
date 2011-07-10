@@ -51,6 +51,7 @@
 #define WM_ADD_MEDIC_TO_XML				WM_USER + 11
 #define WM_DELETE_MEDIC_FROM_XML		WM_USER + 12
 #define WM_REWRITE_MEDICS_XML			WM_USER + 13
+#define WM_ADD_CITY_TO_XML				WM_USER + 14
 
 
 // Needed files and folders
