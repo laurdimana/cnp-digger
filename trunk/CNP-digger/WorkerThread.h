@@ -35,6 +35,7 @@ protected:
 	afx_msg void OnAddMedicToXml( WPARAM wParam, LPARAM lParam = 0 );
 	afx_msg void OnDeleteMedicFromXml( WPARAM wParam, LPARAM lParam = 0 );
 	afx_msg void OnRewriteMedicsXml( WPARAM wParam = 0, LPARAM lParam = 0 );
+	afx_msg void OnAddCityToXml( WPARAM wParam, LPARAM lParam = 0 );
 
 	DECLARE_MESSAGE_MAP()
 };

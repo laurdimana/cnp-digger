@@ -6,6 +6,7 @@
 #include "PatientsSAXContentHandler.h"
 #include "SAXErrorHandler.h"
 #include "DlgCreatePatient.h"
+#include "DlgCreateCity.h"
 
 BEGIN_MESSAGE_MAP( CWorkerThread, CWinThread )
 	ON_THREAD_MESSAGE( WM_CHECK_FOR_ESSENTIAL_FILES,	OnCheckForEssentialFiles )
@@ -20,6 +21,7 @@ BEGIN_MESSAGE_MAP( CWorkerThread, CWinThread )
 	ON_THREAD_MESSAGE( WM_ADD_MEDIC_TO_XML,				OnAddMedicToXml )
 	ON_THREAD_MESSAGE( WM_DELETE_MEDIC_FROM_XML,		OnDeleteMedicFromXml )
 	ON_THREAD_MESSAGE( WM_REWRITE_MEDICS_XML,			OnRewriteMedicsXml )
+	ON_THREAD_MESSAGE( WM_ADD_CITY_TO_XML,				OnAddCityToXml )
 END_MESSAGE_MAP()
 
 ////////////////////////////////////////////////// Static ///////////////////////////////////////////////////////////
@@ -316,6 +318,9 @@ void CWorkerThread::OnAddTempPatientToXml( WPARAM wParam, LPARAM lParam )
 {
 	PATIENT *p = (PATIENT*)wParam;
 
+	if ( p == NULL )
+		return;
+
 	// Check for temp patients xml
 	CString strPath = theApp.m_pProgramData->GetCurrentDir() + L"\\" + TEMP_DIR + L"\\" +
 		theApp.m_pProgramData->GetCurrentMedic().strLastName + L"-" + 
@@ -328,8 +333,10 @@ void CWorkerThread::OnAddTempPatientToXml( WPARAM wParam, LPARAM lParam )
 		if ( !CreateGeneticTempPatientsXml() )
 		{
 			TRACE( L"@ CWorkerThread::OnAddTempPatientToXml -> Failed CreateGeneticTempPatientsXml\n" );
+			theApp.m_pFrmMain->MessageBox( L"Failed to create temp patients xml.", L"Error", MB_ICONERROR );
 			delete p;
 			theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
+			theApp.m_pFrmMain->PostMessage( WM_CLOSE );
 
 			return;
 		}
@@ -341,6 +348,7 @@ void CWorkerThread::OnAddTempPatientToXml( WPARAM wParam, LPARAM lParam )
 	if ( !fXml.Open( strPath, CFile::modeReadWrite | CFile::typeBinary ) )
 	{
 		TRACE( L"@ CWorkerThread::OnAddTempPatientToXml -> Failed fXml.Open [%ld]\n", GetLastError() );
+		theApp.m_pFrmMain->MessageBox( L"Failed to open temp patients xml.", L"Error", MB_ICONERROR );
 		delete p;
 		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
 
@@ -389,6 +397,7 @@ void CWorkerThread::OnAddTempPatientToXml( WPARAM wParam, LPARAM lParam )
 	if ( !theApp.m_pProgramData->PositionInFile( &fXml, pszPersTag, nPersTag, CFile::end, TRUE ) )
 	{
 		TRACE( L"@ CWorkerThread::OnAddTempPatientToXml -> Failed PositionInFile\n" );
+		theApp.m_pFrmMain->MessageBox( L"Failed to position in temp patients xml.", L"Error", MB_ICONERROR );
 		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
 
 		delete [] pszPersTag;
@@ -442,6 +451,7 @@ void CWorkerThread::OnExportTempPatients( WPARAM wParam, LPARAM lParam )
 	if ( !::PathFileExists( strTemp )  )
 	{
 		TRACE( L"@ CWorkerThread::OnExportTempPatients -> Temp patient list not found\n" );
+		theApp.m_pFrmMain->MessageBox( L"Failed to open temp patients xml.", L"Error", MB_ICONERROR );
 		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_NOT_EXPORTED ) );
 
 		return;
@@ -478,6 +488,7 @@ void CWorkerThread::OnExportTempPatients( WPARAM wParam, LPARAM lParam )
 	if ( !fExportXml.Open( strExport, CFile::modeRead | CFile::typeBinary ) )
 	{
 		TRACE( L"@ CWorkerThread::OnExportTempPatients -> Failed fExportXml.Open [%ld]\n", GetLastError() );
+		theApp.m_pFrmMain->MessageBox( L"Failed to open exported patients xml.", L"Error", MB_ICONERROR );
 		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_NOT_EXPORTED ) );
 
 		return;
@@ -493,7 +504,9 @@ void CWorkerThread::OnExportTempPatients( WPARAM wParam, LPARAM lParam )
 		if ( !CreateGeneticPatientsXml() )
 		{
 			TRACE( L"@ CWorkerThread::OnExportTempPatients -> Failed CreateGeneticPatientsXml\n" );
+			theApp.m_pFrmMain->MessageBox( L"Failed to create patients xml.", L"Error", MB_ICONERROR );
 			theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_NOT_EXPORTED ) );
+			theApp.m_pFrmMain->PostMessage( WM_CLOSE );
 
 			return;
 		}
@@ -502,6 +515,7 @@ void CWorkerThread::OnExportTempPatients( WPARAM wParam, LPARAM lParam )
 	if ( !fXml.Open( strXml, CFile::modeReadWrite | CFile::typeBinary ) )
 	{
 		TRACE( L"@ CWorkerThread::OnExportTempPatients -> Failed fXml.Open [%ld]\n", GetLastError() );
+		theApp.m_pFrmMain->MessageBox( L"Failed to open patients xml.", L"Error", MB_ICONERROR );
 		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_NOT_EXPORTED ) );
 
 		return;
@@ -517,6 +531,7 @@ void CWorkerThread::OnExportTempPatients( WPARAM wParam, LPARAM lParam )
 		!theApp.m_pProgramData->PositionInFile( &fExportXml, pszPersonTag, nPersonTag, CFile::current, FALSE, nPersonTag ) )
 	{
 		TRACE( L"@ CWorkerThread::OnExportTempPatients -> Failed PositionInFile fExportXml\n" );
+		theApp.m_pFrmMain->MessageBox( L"Failed to position in exported patients xml.", L"Error", MB_ICONERROR );
 		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_NOT_EXPORTED ) );
 
 		delete [] pszPersonTag;
@@ -536,6 +551,7 @@ void CWorkerThread::OnExportTempPatients( WPARAM wParam, LPARAM lParam )
 	if ( !theApp.m_pProgramData->PositionInFile( &fXml, pszPersTag, nPersTag, CFile::end, TRUE ) )
 	{
 		TRACE( L"@ CWorkerThread::OnExportTempPatients -> Failed PositionInFile fXml\n" );
+		theApp.m_pFrmMain->MessageBox( L"Failed to position in patients xml.", L"Error", MB_ICONERROR );
 		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_PATIENTS_NOT_EXPORTED ) );
 
 		delete [] pszPersTag;
@@ -575,6 +591,9 @@ void CWorkerThread::OnAddMedicToXml( WPARAM wParam, LPARAM lParam )
 {
 	MEDIC *medic = (MEDIC*)wParam;
 
+	if ( medic == NULL )
+		return;
+
 	// Check for medics xml
 	CString strPath = theApp.m_pProgramData->GetCurrentDir() + L"\\" + 
 		theApp.m_pProgramData->GetMedicsXML();
@@ -584,7 +603,9 @@ void CWorkerThread::OnAddMedicToXml( WPARAM wParam, LPARAM lParam )
 		if ( !CreateGenericMedicsXml() )
 		{
 			TRACE( L"@ CWorkerThread::OnAddMedicToXml -> Failed CreateGenericMedicsXml\n" );
+			theApp.m_pFrmMain->MessageBox( L"Failed to create medics xml.", L"Error", MB_ICONERROR );
 			delete medic;
+			theApp.m_pFrmMain->PostMessage( WM_CLOSE );
 
 			return;
 		}
@@ -596,6 +617,7 @@ void CWorkerThread::OnAddMedicToXml( WPARAM wParam, LPARAM lParam )
 	if ( !fXml.Open( strPath, CFile::modeReadWrite | CFile::typeBinary ) )
 	{
 		TRACE( L"@ CWorkerThread::OnAddMedicToXml -> Failed fXml.Open [%ld]\n", GetLastError() );
+		theApp.m_pFrmMain->MessageBox( L"Failed to open medics xml.", L"Error", MB_ICONERROR );
 		delete medic;
 
 		return;
@@ -624,6 +646,7 @@ void CWorkerThread::OnAddMedicToXml( WPARAM wParam, LPARAM lParam )
 	if ( !theApp.m_pProgramData->PositionInFile( &fXml, pszMedicsTag, nMedicsTag, CFile::end, TRUE ) )
 	{
 		TRACE( L"@ CWorkerThread::OnAddMedicToXml -> Failed PositionInFile\n" );
+		theApp.m_pFrmMain->MessageBox( L"Failed to position in medics xml.", L"Error", MB_ICONERROR );
 
 		delete [] pszMedicsTag;
 		delete [] pszUTF8;
@@ -726,6 +749,82 @@ void CWorkerThread::OnRewriteMedicsXml( WPARAM wParam, LPARAM lParam )
 	fXml.Close();
 }
 
+void CWorkerThread::OnAddCityToXml( WPARAM wParam, LPARAM lParam )
+{
+	CITY *pCity = (CITY*)wParam;
+
+	if ( pCity == NULL )
+		return;
+
+	CString strPath = theApp.m_pProgramData->GetCurrentDir() + L"\\" + 
+		theApp.m_pProgramData->GetCitiesXML();
+
+	if ( !::PathFileExists( strPath ) )
+	{
+		if ( !CreateGenericCitiesXml() )
+		{
+			TRACE( L"@ CWorkerThread::OnAddCityToXml -> Failed to create cityes xml\n" );
+			theApp.m_pFrmMain->MessageBox( L"Failed to create cityes xml.", L"Error", MB_ICONERROR );
+			delete pCity;
+			theApp.m_pFrmMain->PostMessage( WM_CLOSE );
+
+			return;
+		}
+	}
+
+	// Add city to xml
+	CFile fXml;
+
+	if ( !fXml.Open( strPath, CFile::modeReadWrite | CFile::typeBinary ) )
+	{
+		TRACE( L"@ CWorkerThread::OnAddCityToXml -> Failed fXml.Open [%ld]\n", GetLastError() );
+		theApp.m_pFrmMain->MessageBox( L"Failed to open cityes xml.", L"Error", MB_ICONERROR );
+		delete pCity;
+
+		return;
+	}
+
+	// What to write
+	CString strXml;
+	strXml.Format( L"\t<%s %s=\"%s\" %s=\"%s\" />\n</%s>",
+		XML_CITY, 
+		XML_CITY_NAME, pCity->strName, 
+		XML_CITY_CODE, pCity->strID,
+		XML_CITIES );
+	TRACE( "@ CWorkerThread::OnAddCityToXml -> Write \n%S\n", strXml );
+
+	// Convert to UTF8
+	int  nUTF8    = strXml.GetLength()*2;
+	char *pszUTF8 = new char[ nUTF8 ];
+	theApp.m_pProgramData->ToUTF8( strXml.GetBuffer(), strXml.GetLength(), pszUTF8, &nUTF8 );
+
+	char *pszCitiesTag = new char[ MAX_PATH ];
+	int  nCitiesTag    = wcslen( XML_MEDICS ) + 3;
+
+	sprintf_s( pszCitiesTag, MAX_PATH, "</%S>", XML_CITIES );
+	
+	if ( !theApp.m_pProgramData->PositionInFile( &fXml, pszCitiesTag, nCitiesTag, CFile::end, TRUE ) )
+	{
+		TRACE( L"@ CWorkerThread::OnAddCityToXml -> Failed PositionInFile\n" );
+		theApp.m_pFrmMain->MessageBox( L"Failed to position in cityes xml.", L"Error", MB_ICONERROR );
+
+		delete [] pszCitiesTag;
+		delete [] pszUTF8;
+		delete pCity;
+		fXml.Close();
+
+		return;
+	}
+		
+	fXml.Write( pszUTF8, nUTF8 );
+
+	// Cleanup
+	delete [] pszCitiesTag;
+	delete [] pszUTF8;
+	delete pCity;
+	fXml.Close();
+}
+
 //////////////////////////////////////////////////// Methods //////////////////////////////////////////////////////////
 
 int CWorkerThread::SQLiteCallback( void *NotUsed, int argc, char **argv, char **coln )
@@ -757,7 +856,31 @@ int CWorkerThread::SQLiteCallback( void *NotUsed, int argc, char **argv, char **
 				p->strFirstName = dlgCreatePatient.GetFirstName();
 				p->strCityCode  = theApp.m_pProgramData->GetCity( dlgCreatePatient.GetCity() ).strID;
 
-				OnAddTempPatientToXml( (WPARAM)p, 0 );
+				// City not found, create?
+				if ( p->strCityCode.IsEmpty() )
+				{
+					CDlgCreateCity dlgCreateCity( dlgCreatePatient.GetCity() );
+
+					if ( dlgCreateCity.DoModal() == IDOK )
+					{
+						p->strCityCode = dlgCreateCity.GetCode();
+
+						theApp.m_pProgramData->AddCity( dlgCreateCity.GetCode(), dlgCreatePatient.GetCity(), CITY_DISTRICT_CODE );
+
+						CITY *city = new CITY;
+						city->strName	  = dlgCreatePatient.GetCity();
+						city->strID		  = dlgCreateCity.GetCode();
+						city->strDistrict = CITY_DISTRICT_CODE;
+						theApp.m_pWorkerThread->PostThreadMessage( WM_ADD_CITY_TO_XML, (WPARAM)city, 0 );
+					}
+					else
+						p->strCityCode = L"";
+				}
+
+				if ( !p->strID.IsEmpty() && !p->strLastName.IsEmpty() && !p->strFirstName.IsEmpty() && !p->strCityCode.IsEmpty() )
+					OnAddTempPatientToXml( (WPARAM)p, 0 );
+				else
+					theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
 
 				theApp.m_pFrmMain->ResetTxtCnp();
 			}
@@ -782,7 +905,31 @@ int CWorkerThread::SQLiteCallback( void *NotUsed, int argc, char **argv, char **
 		TRACE( L"@ CWorkerThread::SQLiteCallback -> Add %s, %s, %s, %s, %s\n", 
 			p->strID, p->strLastName, p->strFirstName, strCity, p->strCityCode );
 
-		OnAddTempPatientToXml( (WPARAM)p, 0 );
+		// City not found, create?
+		if ( p->strCityCode.IsEmpty() )
+		{
+			CDlgCreateCity dlgCreateCity( strCity );
+
+			if ( dlgCreateCity.DoModal() == IDOK )
+			{
+				p->strCityCode = dlgCreateCity.GetCode();
+
+				theApp.m_pProgramData->AddCity( dlgCreateCity.GetCode(), strCity, CITY_DISTRICT_CODE );
+
+				CITY *city = new CITY;
+				city->strName	  = strCity;
+				city->strID		  = dlgCreateCity.GetCode();
+				city->strDistrict = CITY_DISTRICT_CODE;
+				theApp.m_pWorkerThread->PostThreadMessage( WM_ADD_CITY_TO_XML, (WPARAM)city, 0 );
+			}
+			else
+				p->strCityCode = L"";
+		}
+
+		if ( !p->strID.IsEmpty() && !p->strLastName.IsEmpty() && !p->strFirstName.IsEmpty() && !p->strCityCode.IsEmpty() )
+			OnAddTempPatientToXml( (WPARAM)p, 0 );
+		else
+			theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
 
 		theApp.m_pFrmMain->ResetTxtCnp();
 	}

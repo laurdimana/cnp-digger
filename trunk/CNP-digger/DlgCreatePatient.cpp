@@ -60,20 +60,20 @@ void CDlgCreatePatient::OnBtnOK()
 
 CString CDlgCreatePatient::GetCNP()
 {
-	return m_strCNP;
+	return m_strCNP.Trim();
 }
 
 CString CDlgCreatePatient::GetLastName()
 {
-	return m_strLastName;
+	return m_strLastName.Trim();
 }
 
 CString CDlgCreatePatient::GetFirstName()
 {
-	return m_strFirstName;
+	return m_strFirstName.Trim();
 }
 
 CString CDlgCreatePatient::GetCity()
 {
-	return m_strCity;
+	return m_strCity.Trim();
 }
