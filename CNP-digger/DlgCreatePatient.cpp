@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "DlgCreatePatient.h"
+#include "CNP-digger.h"
 
 BEGIN_MESSAGE_MAP( CDlgCreatePatient, CDialogEx )
 	ON_BN_CLICKED( IDOK, OnBtnOK )
@@ -25,7 +26,8 @@ void CDlgCreatePatient::DoDataExchange( CDataExchange* pDX )
 	DDX_Text( pDX, DLG_CREATE_PATIENT_TXT_CNP,		  m_strCNP );
 	DDX_Text( pDX, DLG_CREATE_PATIENT_TXT_LAST_NAME,  m_strLastName );
 	DDX_Text( pDX, DLG_CREATE_PATIENT_TXT_FIRST_NAME, m_strFirstName );
-	DDX_Text( pDX, DLG_CREATE_PATIENT_TXT_CITY,		  m_strCity );
+	DDX_Text( pDX, DLG_CREATE_PATIENT_CMB_CITY,		  m_strCity );
+	DDX_Control( pDX, DLG_CREATE_PATIENT_CMB_CITY,	  m_cmbCity );
 	DDX_Control( pDX, IDOK,		m_btnOK );
 	DDX_Control( pDX, IDCANCEL,	m_btnCancel );
 }
@@ -33,6 +35,18 @@ void CDlgCreatePatient::DoDataExchange( CDataExchange* pDX )
 BOOL CDlgCreatePatient::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
+
+	CMapStringToCity::CPair *pCurVal = theApp.m_pProgramData->GetCitiesMap()->PGetFirstAssoc();
+	m_cmbCity.ResetContent();
+
+	while ( pCurVal != NULL )
+	{
+		m_cmbCity.AddString( pCurVal->value.strName );
+
+		pCurVal = theApp.m_pProgramData->GetCitiesMap()->PGetNextAssoc( pCurVal );
+	}
+
+	m_cmbCity.SetCurSel( -1 );
 
 	return TRUE;
 }

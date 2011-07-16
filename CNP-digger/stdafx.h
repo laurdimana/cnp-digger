@@ -106,6 +106,8 @@
 #define DB_CITY					L"localitate"
 #define EXPORTED_XML			L"exported"
 #define MAX_XML_LINE			4096
+#define TOREPLACE				L"TOREPLACE"
+#define VALID_CNP_LEN			13
 
 // Structs
 struct MEDIC
