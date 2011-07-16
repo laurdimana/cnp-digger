@@ -238,7 +238,13 @@ void CFrmMain::OnTxtCnpChange()
 	if ( theApp.m_pProgramData->IsCnpValid( pstrCnp->GetBuffer() ) )
 		m_txtCNP.SetSel( 0, -1 );
 
-	this->PostMessage( WM_UPDATE_PATIENTS_TABLE, (WPARAM)pstrCnp );
+	// TODO: Find a better method for handling many entries
+	// This is a workaround
+	if ( pstrCnp->GetLength() > 3 || 
+		(pstrCnp->GetLength() <= 3 && m_tblPatients.GetItemCount() < theApp.m_pProgramData->GetPatients() + theApp.m_pProgramData->GetTempPatients()) )
+		this->PostMessage( WM_UPDATE_PATIENTS_TABLE, (WPARAM)pstrCnp );
+	else
+		delete pstrCnp;
 }
 
 void CFrmMain::OnBtnGo()
@@ -251,7 +257,8 @@ void CFrmMain::OnBtnGo()
 		theApp.m_pProgramData->GetDisplayedPatients() > 0 )
 	{
 		ResetTxtCnp();
-		SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
+		CString strStatus = (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ); strStatus.Replace( TOREPLACE, *pstrCnp );
+		SetStatus( strStatus );
 		delete pstrCnp;
 
 		return;

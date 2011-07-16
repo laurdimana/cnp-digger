@@ -335,7 +335,8 @@ void CWorkerThread::OnAddTempPatientToXml( WPARAM wParam, LPARAM lParam )
 			TRACE( L"@ CWorkerThread::OnAddTempPatientToXml -> Failed CreateGeneticTempPatientsXml\n" );
 			theApp.m_pFrmMain->MessageBox( L"Failed to create temp patients xml.", L"Error", MB_ICONERROR );
 			delete p;
-			theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
+			CString strStatus = (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ); strStatus.Replace( TOREPLACE, p->strID );
+			theApp.m_pFrmMain->SetStatus( strStatus );
 			theApp.m_pFrmMain->PostMessage( WM_CLOSE );
 
 			return;
@@ -350,7 +351,8 @@ void CWorkerThread::OnAddTempPatientToXml( WPARAM wParam, LPARAM lParam )
 		TRACE( L"@ CWorkerThread::OnAddTempPatientToXml -> Failed fXml.Open [%ld]\n", GetLastError() );
 		theApp.m_pFrmMain->MessageBox( L"Failed to open temp patients xml.", L"Error", MB_ICONERROR );
 		delete p;
-		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
+		CString strStatus = (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ); strStatus.Replace( TOREPLACE, p->strID );
+		theApp.m_pFrmMain->SetStatus( strStatus );
 
 		return;
 	}
@@ -372,8 +374,8 @@ void CWorkerThread::OnAddTempPatientToXml( WPARAM wParam, LPARAM lParam )
 	strXml.Format( L"\t<%s %s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\" %s=\"%s\">\n\t\t<%s %s=\"%s\" %s=\"%s\"/>\n\t</%s>\n</%s>",
 		XML_PERSON, 
 		XML_PERSON_PID, strCnp, 
-		XML_PERSON_FIRST_NAME, strFirstName,
-		XML_PERSON_LAST_NAME, strLastName,
+		XML_PERSON_FIRST_NAME, strFirstName.MakeUpper(),
+		XML_PERSON_LAST_NAME, strLastName.MakeUpper(),
 		XML_PERSON_GENDER, strGender,
 		XML_PERSON_BIRTH_DATE, strBirthDate,
 		XML_PERSON_UNIT, XML_UNIT_OF_PAYMENT,
@@ -398,7 +400,8 @@ void CWorkerThread::OnAddTempPatientToXml( WPARAM wParam, LPARAM lParam )
 	{
 		TRACE( L"@ CWorkerThread::OnAddTempPatientToXml -> Failed PositionInFile\n" );
 		theApp.m_pFrmMain->MessageBox( L"Failed to position in temp patients xml.", L"Error", MB_ICONERROR );
-		theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
+		CString strStatus = (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ); strStatus.Replace( TOREPLACE, strCnp );
+		theApp.m_pFrmMain->SetStatus( strStatus );
 
 		delete [] pszPersTag;
 		delete [] pszUTF8;
@@ -410,14 +413,15 @@ void CWorkerThread::OnAddTempPatientToXml( WPARAM wParam, LPARAM lParam )
 	fXml.Write( pszUTF8, nUTF8 );
 
 	// Add temp patient to list
-	theApp.m_pProgramData->AddPatientTemp( strCnp, strLastName, strFirstName, strCityCode );
+	theApp.m_pProgramData->AddPatientTemp( strCnp, strLastName.MakeUpper(), strFirstName.MakeUpper(), strCityCode );
 
 	// Cleanup
 	delete [] pszPersTag;
 	delete [] pszUTF8;
 	fXml.Close();
 
-	theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_ADDED ) );
+	CString strStatus = (CString)MAKEINTRESOURCE( STATUS_CNP_ADDED ); strStatus.Replace( TOREPLACE, strCnp );
+	theApp.m_pFrmMain->SetStatus( strStatus );
 }
 
 void CWorkerThread::OnImportPatientsXml( WPARAM wParam, LPARAM lParam )
@@ -880,13 +884,18 @@ int CWorkerThread::SQLiteCallback( void *NotUsed, int argc, char **argv, char **
 				if ( !p->strID.IsEmpty() && !p->strLastName.IsEmpty() && !p->strFirstName.IsEmpty() && !p->strCityCode.IsEmpty() )
 					OnAddTempPatientToXml( (WPARAM)p, 0 );
 				else
-					theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
+				{
+					CString strStatus = (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ); strStatus.Replace( TOREPLACE, p->strID );
+					theApp.m_pFrmMain->SetStatus( strStatus );
+					delete p;
+				}
 
 				theApp.m_pFrmMain->ResetTxtCnp();
 			}
 			else
 			{
-				theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
+				CString strStatus = (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ); strStatus.Replace( TOREPLACE, strCnp );
+				theApp.m_pFrmMain->SetStatus( strStatus );
 				theApp.m_pFrmMain->ResetTxtCnp();
 			}
 		}
@@ -929,7 +938,11 @@ int CWorkerThread::SQLiteCallback( void *NotUsed, int argc, char **argv, char **
 		if ( !p->strID.IsEmpty() && !p->strLastName.IsEmpty() && !p->strFirstName.IsEmpty() && !p->strCityCode.IsEmpty() )
 			OnAddTempPatientToXml( (WPARAM)p, 0 );
 		else
-			theApp.m_pFrmMain->SetStatus( (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ) );
+		{
+			CString strStatus = (CString)MAKEINTRESOURCE( STATUS_CNP_NOT_ADDED ); strStatus.Replace( TOREPLACE, p->strID );
+			theApp.m_pFrmMain->SetStatus( strStatus );
+			delete p;
+		}
 
 		theApp.m_pFrmMain->ResetTxtCnp();
 	}

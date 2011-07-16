@@ -25,6 +25,8 @@ protected:
 	CButton m_btnOK,
 			m_btnCancel;
 
+	CComboBox m_cmbCity;
+
 	CString m_strCNP,
 			m_strLastName,
 			m_strFirstName,

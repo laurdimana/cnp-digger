@@ -97,7 +97,7 @@ BOOL CProgramData::ToUTF8( wchar_t *pszIn, int nInLen, char *pszOut, int *nOutLe
 
 BOOL CProgramData::IsCnpValid( wchar_t *pszCnp )
 {
-	if ( wcslen( pszCnp ) != 13 )
+	if ( wcslen( pszCnp ) != VALID_CNP_LEN )
 		return FALSE;
 
 	int S = 0;
@@ -222,7 +222,7 @@ void CProgramData::AddPatientTemp( CString strID, CString strLastName, CString s
 	patient.strFirstName = strFirstName;
 	patient.strCityCode  = strCityCode;
 
-	m_PatientsListTemp.AddTail( patient );
+	m_PatientsListTemp.AddHead( patient );
 
 	TRACE( L"@ CProgramData::AddPatientTemp -> Load patient %s %s %s %s\n",
 		m_PatientsListTemp.GetTail().strID,
@@ -299,6 +299,11 @@ PATIENT CProgramData::GetPatientTemp( int nIndex )
 CMapStringToMedic *CProgramData::GetMedicsMap()
 {
 	return &m_MedicsMap;
+}
+
+CMapStringToCity *CProgramData::GetCitiesMap()
+{
+	return &m_CitiesMap;
 }
 
 CListPatients *CProgramData::GetPatientsList()

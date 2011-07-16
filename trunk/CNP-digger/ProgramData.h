@@ -44,6 +44,7 @@ public:
 	PATIENT GetPatientTemp( int nIndex );
 
 	CMapStringToMedic *GetMedicsMap();
+	CMapStringToCity  *GetCitiesMap();
 	CListPatients	  *GetPatientsList();
 	CListPatients	  *GetTempPatientsList();
 
