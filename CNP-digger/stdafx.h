@@ -90,7 +90,7 @@
 #define XML_PERSON_ADDRESS_CITY_CODE		L"cityCode"
 #define XML_PERSON_ADDRESS_DISTRICT_CODE	L"districtCode"
 
-// General constants
+// Internal constants
 #define XML_HEADER				L"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 #define XML_PERSONS_XMLNS		L"xmlns=\"http://localhost\""
 #define XML_UNIT_OF_PAYMENT		L"CAS-TR"
@@ -108,6 +108,23 @@
 #define MAX_XML_LINE			4096
 #define TOREPLACE				L"TOREPLACE"
 #define VALID_CNP_LEN			13
+
+// UI constants
+#define APP_ID									L"iMPROVED.CNP-digger.0-0-3"
+#define FRM_MAIN_BTN_GO_CAPTION					L"GO"
+#define FRM_MAIN_TBL_PATIENTS_COL_0_CAPTION		L"CNP"
+#define FRM_MAIN_TBL_PATIENTS_COL_0_WIDTH		120
+#define FRM_MAIN_TBL_PATIENTS_COL_1_CAPTION		L"Last Name"
+#define FRM_MAIN_TBL_PATIENTS_COL_1_WIDTH		115
+#define FRM_MAIN_TBL_PATIENTS_COL_2_CAPTION		L"First Name"
+#define FRM_MAIN_TBL_PATIENTS_COL_2_WIDTH		115
+#define FRM_MAIN_TBL_PATIENTS_DOUBLE_BUFFER		TRUE
+#define COLOR_WHITE								RGB( 255, 255, 255 )
+#define COLOR_SNOW								RGB( 245, 245, 245 )
+#define COLOR_GRAY								RGB( 211, 211, 211 )
+#define COLOR_BLACK								RGB( 0, 0, 0 )
+#define COLOR_GREEN								RGB( 0, 255, 0 )
+#define COLOR_RED								RGB( 255, 0, 0 )
 
 // Structs
 struct MEDIC

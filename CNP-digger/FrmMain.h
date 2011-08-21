@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include "MyCUG.h"
+#include "OXEdit.h"
+
 class CFrmMain : public CFrameWnd
 {
 
@@ -22,7 +25,7 @@ public:
 
 // Methods
 protected:
-	BOOL AddPatientToTable( int nNo, CString strCNP, CString strLastName, CString strFirstName, BOOL bTemp = FALSE );
+	BOOL AddPatientToTable( int nRow, CString strCNP, CString strLastName, CString strFirstName, COLORREF dwColor = COLOR_WHITE );
 
 public:
 	void SetStatus( CString strMsg );
@@ -34,8 +37,8 @@ protected:
 	CFont m_fntSansSerif12;
 
 	CStatusBar m_StatusBar;
-	CEdit	   m_txtCNP;
-	CListCtrl  m_tblPatients;
+	COXEdit	   m_txtCNP;
+	MyCug	   m_tblPatients;
 	CButton	   m_btnGo;
 	CStatic	   m_lblPatients;
 

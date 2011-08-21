@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="MFC Ultimate Grid">
+      <UniqueIdentifier>{97f1efe8-38b7-4b0b-a2a1-9f49b0864461}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MFC Ultimate Toolbox">
+      <UniqueIdentifier>{7cb0275e-0e1e-453b-80cc-43ca5b1ac8ad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\CNPdigger.rc2">
@@ -74,6 +80,9 @@
     <ClInclude Include="DlgCreateCity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MyCUG.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CNP-digger.cpp">
@@ -114,6 +123,102 @@
     </ClCompile>
     <ClCompile Include="DlgCreateCity.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UGCBType.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGCell.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGCelTyp.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGCnrBtn.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGCTarrw.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGCtrl.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGDLType.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGDrgDrp.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGDrwHnt.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGDtaSrc.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGEdit.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGEditBase.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="ugformat.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="uggdinfo.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGGrid.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGHint.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="ughscrol.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="ugLstBox.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGMEdit.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGMemMan.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGMultiS.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="ugprint.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="ugptrlst.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="ugsidehd.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGStrOp.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="ugtab.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGTopHdg.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="ugvscrol.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="UGXPThemes.cpp">
+      <Filter>MFC Ultimate Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="MyCUG.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OXEdit.cpp">
+      <Filter>MFC Ultimate Toolbox</Filter>
+    </ClCompile>
+    <ClCompile Include="UTBStrOp.cpp">
+      <Filter>MFC Ultimate Toolbox</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

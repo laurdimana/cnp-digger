@@ -99,7 +99,7 @@ int CFrmMain::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	int nScreenW = ::GetSystemMetrics( SM_CXSCREEN );
 	int nScreenH = ::GetSystemMetrics( SM_CYSCREEN );
 	int nWndW = 400;
-	int nWndH = 800;
+	int nWndH = 600;
 	int nWndX = (nScreenW - nWndW) / 2;
 	int nWndY = (nScreenH - nWndH) / 2;
 	this->SetWindowPos( NULL, nWndX, nWndY, nWndW, nWndH, SWP_SHOWWINDOW );
@@ -142,7 +142,7 @@ int CFrmMain::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Go button
 	crect.SetRect( 340, 10, 385, 40 );
 	bSucc = m_btnGo.Create(
-		L"GO",
+		FRM_MAIN_BTN_GO_CAPTION,
 		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
 		crect,
 		this,
@@ -157,10 +157,9 @@ int CFrmMain::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_btnGo.SetFont( &m_fntSansSerif12 );
 
 	// Pacients table
-	crect.SetRect( 10, 50, 385, 720 );
-	bSucc = m_tblPatients.CreateEx( 
-		WS_EX_CLIENTEDGE,
-		WS_CHILD | WS_VISIBLE | WS_BORDER | LVS_REPORT | LVS_SHOWSELALWAYS,
+	crect.SetRect( 10, 50, 385, 520 );
+	bSucc = m_tblPatients.CreateGrid(
+		WS_CHILD | WS_VISIBLE,
 		crect,
 		this,
 		FRM_MAIN_TBL_PERSONS );
@@ -171,11 +170,23 @@ int CFrmMain::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 	}
 
-	m_tblPatients.SetExtendedStyle( LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_INFOTIP | m_tblPatients.GetExtendedStyle() );
-	m_tblPatients.InsertColumn( 0, L"CNP", LVCFMT_LEFT, 90 );
-	m_tblPatients.InsertColumn( 1, L"Last Name", LVCFMT_LEFT, 110 );
-	m_tblPatients.InsertColumn( 2, L"First Name", LVCFMT_LEFT, 130 );
-	m_tblPatients.InsertColumn( 3, L"+", LVCFMT_LEFT, 20 );
+	m_tblPatients.SetNumberCols( 3 );
+
+	m_tblPatients.SetColWidth( -1, 0 );
+
+	m_tblPatients.QuickSetText( 0, -1, FRM_MAIN_TBL_PATIENTS_COL_0_CAPTION );
+	m_tblPatients.SetColWidth( 0, FRM_MAIN_TBL_PATIENTS_COL_0_WIDTH );
+
+	m_tblPatients.QuickSetText( 1, -1, FRM_MAIN_TBL_PATIENTS_COL_1_CAPTION );
+	m_tblPatients.SetColWidth( 1, FRM_MAIN_TBL_PATIENTS_COL_1_WIDTH );
+
+	m_tblPatients.QuickSetText( 2, -1, FRM_MAIN_TBL_PATIENTS_COL_2_CAPTION );
+	m_tblPatients.SetColWidth( 2, FRM_MAIN_TBL_PATIENTS_COL_2_WIDTH );
+
+	m_tblPatients.SetVScrollMode( UG_SCROLLTRACKING );
+	m_tblPatients.SetBallisticMode( 3 );
+	m_tblPatients.SetBallisticDelay( 100 );
+	m_tblPatients.SetDoubleBufferMode( FRM_MAIN_TBL_PATIENTS_DOUBLE_BUFFER );
 
 	m_txtCNP.SetFocus();
 
@@ -234,17 +245,55 @@ void CFrmMain::OnTxtCnpChange()
 	CString *pstrCnp = new CString();
 
 	m_txtCNP.GetWindowText( *pstrCnp );
+	int nLen	= pstrCnp->GetLength();
+	int nGender = nLen > 0  ? _wtoi( pstrCnp->Mid( 0, 1 ) ) : -1;
+	int nMonth	= nLen >= 5 ? _wtoi( pstrCnp->Mid( 3, 2 ) ) : -1;
+	int nDay	= nLen >= 7 ? _wtoi( pstrCnp->Mid( 5, 2 ) ) : -1;
 
-	if ( theApp.m_pProgramData->IsCnpValid( pstrCnp->GetBuffer() ) )
-		m_txtCNP.SetSel( 0, -1 );
+	m_txtCNP.SetBkColor( COLOR_WHITE );
 
-	// TODO: Find a better method for handling many entries
-	// This is a workaround
-	if ( pstrCnp->GetLength() > 3 || 
-		(pstrCnp->GetLength() <= 3 && m_tblPatients.GetItemCount() < theApp.m_pProgramData->GetPatients() + theApp.m_pProgramData->GetTempPatients()) )
+	if ( nGender != -1 &&
+		( nGender != 1 && nGender != 2 && nGender != 5 && nGender != 6 ) )
+	{
+		m_txtCNP.SetBkColor( COLOR_RED );
+		return;
+	}
+
+	if ( nMonth != -1 &&
+		( nMonth < 1 || nMonth > 12 ) )
+	{
+		m_txtCNP.SetBkColor( COLOR_RED );
+		return;
+	}
+
+	if ( nDay != -1 &&
+		( nDay < 1 || nDay > 31 ) )
+	{
+		m_txtCNP.SetBkColor( COLOR_RED );
+		return;
+	}
+
+	if ( nLen == 13 )
+	{
+		if ( theApp.m_pProgramData->IsCnpValid( pstrCnp->GetBuffer() ) )
+			m_txtCNP.SetBkColor( COLOR_GREEN );
+		else
+		{
+			m_txtCNP.SetBkColor( COLOR_RED );
+			return;
+		}
+	}
+	else if ( nLen > 13 )
+	{
+		m_txtCNP.SetBkColor( COLOR_RED );
+		return;
+	}
+
+	//if ( pstrCnp->GetLength() > 3 || 
+	//	(pstrCnp->GetLength() <= 3 && m_tblPatients.GetNumberRows() < theApp.m_pProgramData->GetPatients() + theApp.m_pProgramData->GetTempPatients()) )
 		this->PostMessage( WM_UPDATE_PATIENTS_TABLE, (WPARAM)pstrCnp );
-	else
-		delete pstrCnp;
+	//else
+	//	delete pstrCnp;
 }
 
 void CFrmMain::OnBtnGo()
@@ -272,7 +321,9 @@ LRESULT CFrmMain::OnUpdatePatientsTable( WPARAM wParam, LPARAM lParam )
 	CString *pstrSuffix = wParam ? (CString*)wParam : new CString( L"" );
 	int		index       = 0;
 
-	m_tblPatients.DeleteAllItems();
+	m_tblPatients.SetNumberRows( 
+		theApp.m_pProgramData->GetTempPatients() + 
+		theApp.m_pProgramData->GetPatients(), FALSE );
 
 	// Add temp patients
 	CListPatients *list = theApp.m_pProgramData->GetTempPatientsList();
@@ -283,7 +334,7 @@ LRESULT CFrmMain::OnUpdatePatientsTable( WPARAM wParam, LPARAM lParam )
 		PATIENT p = list->GetNext( pos );
 
 		if ( pstrSuffix->IsEmpty() || p.strID.Left( pstrSuffix->GetLength() ) == *pstrSuffix )
-			AddPatientToTable( index++, p.strID, p.strLastName, p.strFirstName, TRUE );
+			AddPatientToTable( index++, p.strID, p.strLastName, p.strFirstName, COLOR_SNOW );
 	}
 
 	//Add patients
@@ -296,6 +347,19 @@ LRESULT CFrmMain::OnUpdatePatientsTable( WPARAM wParam, LPARAM lParam )
 
 		if ( pstrSuffix->IsEmpty() || p.strID.Left( pstrSuffix->GetLength() ) == *pstrSuffix )
 			AddPatientToTable( index++, p.strID, p.strLastName, p.strFirstName );
+	}
+
+	if ( index > 0 )
+	{
+		m_tblPatients.SetNumberRows( index );
+
+		if ( !m_tblPatients.IsWindowVisible() )
+			m_tblPatients.ShowWindow( TRUE );
+	}
+	else
+	{
+		if ( m_tblPatients.IsWindowVisible() )
+			m_tblPatients.ShowWindow( FALSE );
 	}
 
 	// Update current number of patients
@@ -312,35 +376,20 @@ LRESULT CFrmMain::OnUpdatePatientsTable( WPARAM wParam, LPARAM lParam )
 
 //////////////////////////////////////////////////////// Methods /////////////////////////////////////////////////////////
 
-BOOL CFrmMain::AddPatientToTable( int nNo, CString strCNP, CString strLastName, CString strFirstName, BOOL bTemp )
+BOOL CFrmMain::AddPatientToTable( int nRow, CString strCNP, CString strLastName, CString strFirstName, COLORREF dwColor )
 {
-	LVITEM lvi = { 0 };
-
-	lvi.iItem = nNo;
-	lvi.mask  = LVIF_TEXT;
-
 	// CNP
-	lvi.iSubItem = 0;
-	lvi.pszText  = strCNP.GetBuffer();
-	m_tblPatients.InsertItem( &lvi );
+	m_tblPatients.QuickSetText( 0, nRow, strCNP );
 
 	// Last name
-	lvi.iSubItem = 1;
-	lvi.pszText  = strLastName.GetBuffer();
-	m_tblPatients.SetItem( &lvi );
+	m_tblPatients.QuickSetText( 1, nRow, strLastName );
 
 	// First name
-	lvi.iSubItem = 2;
-	lvi.pszText  = strFirstName.GetBuffer();
-	m_tblPatients.SetItem( &lvi );
+	m_tblPatients.QuickSetText( 2, nRow, strFirstName );
 
-	// Temp
-	if ( bTemp )
-	{
-		lvi.iSubItem = 3;
-		lvi.pszText  = TEMP_TABLE_MARKER;
-		m_tblPatients.SetItem( &lvi );
-	}
+	// Row color
+	for ( int i = 0; i < 3; i++ )
+		m_tblPatients.QuickSetBackColor( i, nRow, dwColor );
 
 	return TRUE;
 }
