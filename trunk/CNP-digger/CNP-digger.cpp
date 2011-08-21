@@ -24,7 +24,7 @@ END_MESSAGE_MAP()
 
 CCNPdiggerApp::CCNPdiggerApp()
 {
-	SetAppID( L"iMPROVED.CNP-digger.0-0-1" );
+	SetAppID( APP_ID );
 }
 
 // The one and only CCNPdiggerApp object

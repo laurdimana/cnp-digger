@@ -41,12 +41,16 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(IncludePath)</IncludePath>
+    <IncludePath>d:\Program Files (x86)\MFC Ultimate Pack\Ultimate Grid\Include\;d:\Program Files (x86)\MFC Ultimate Pack\Ultimate Toolbox\include\;$(IncludePath)</IncludePath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
+    <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>d:\Program Files (x86)\MFC Ultimate Pack\Ultimate Grid\Include\;d:\Program Files (x86)\MFC Ultimate Pack\Ultimate Toolbox\include\;$(IncludePath)</IncludePath>
+    <SourcePath>$(SourcePath)</SourcePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -111,6 +115,7 @@
     <ClInclude Include="DlgMedics.h" />
     <ClInclude Include="FrmMain.h" />
     <ClInclude Include="MedicsSAXContentHandler.h" />
+    <ClInclude Include="MyCUG.h" />
     <ClInclude Include="PatientsSAXContentHandler.h" />
     <ClInclude Include="ProgramData.h" />
     <ClInclude Include="Resource.h" />
@@ -130,6 +135,8 @@
     <ClCompile Include="DlgMedics.cpp" />
     <ClCompile Include="FrmMain.cpp" />
     <ClCompile Include="MedicsSaxContentHandler.cpp" />
+    <ClCompile Include="MyCUG.cpp" />
+    <ClCompile Include="OXEdit.cpp" />
     <ClCompile Include="PatientsSAXContentHandler.cpp" />
     <ClCompile Include="ProgramData.cpp" />
     <ClCompile Include="SQLiteWrapper.cpp" />
@@ -137,6 +144,36 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="UGCBType.cpp" />
+    <ClCompile Include="UGCell.cpp" />
+    <ClCompile Include="UGCelTyp.cpp" />
+    <ClCompile Include="UGCnrBtn.cpp" />
+    <ClCompile Include="UGCTarrw.cpp" />
+    <ClCompile Include="UGCtrl.cpp" />
+    <ClCompile Include="UGDLType.cpp" />
+    <ClCompile Include="UGDrgDrp.cpp" />
+    <ClCompile Include="UGDrwHnt.cpp" />
+    <ClCompile Include="UGDtaSrc.cpp" />
+    <ClCompile Include="UGEdit.cpp" />
+    <ClCompile Include="UGEditBase.cpp" />
+    <ClCompile Include="ugformat.cpp" />
+    <ClCompile Include="uggdinfo.cpp" />
+    <ClCompile Include="UGGrid.cpp" />
+    <ClCompile Include="UGHint.cpp" />
+    <ClCompile Include="ughscrol.cpp" />
+    <ClCompile Include="ugLstBox.cpp" />
+    <ClCompile Include="UGMEdit.cpp" />
+    <ClCompile Include="UGMemMan.cpp" />
+    <ClCompile Include="UGMultiS.cpp" />
+    <ClCompile Include="ugprint.cpp" />
+    <ClCompile Include="ugptrlst.cpp" />
+    <ClCompile Include="ugsidehd.cpp" />
+    <ClCompile Include="UGStrOp.cpp" />
+    <ClCompile Include="ugtab.cpp" />
+    <ClCompile Include="UGTopHdg.cpp" />
+    <ClCompile Include="ugvscrol.cpp" />
+    <ClCompile Include="UGXPThemes.cpp" />
+    <ClCompile Include="UTBStrOp.cpp" />
     <ClCompile Include="WorkerThread.cpp" />
   </ItemGroup>
   <ItemGroup>
